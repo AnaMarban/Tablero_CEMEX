@@ -18,7 +18,8 @@ CARGAS = json.load(open(DATA / "cargas_seed.json", encoding="utf-8"))
 ld = lambda n: json.load(open(DATA / n, encoding="utf-8"))
 MODS = {"mot": (ld("seed_motores.json"), ld("cargas_motores.json")),
         "int": (ld("seed_int.json"), ld("cargas_int.json")),
-        "tra": (ld("seed_tra.json"), ld("cargas_tra.json"))}
+        "tra": (ld("seed_tra.json"), ld("cargas_tra.json")),
+        "tri": (ld("seed_tri.json"), ld("cargas_tri.json"))}
 ORIG = DATA / "originales"
 SEED_FILES = {
     "c_seed_txt": dict(name="EquiposOrios_2026-10-15.txt", text=(ORIG / "EquiposOrios_2026-10-15.txt").read_text(encoding="utf-8")),

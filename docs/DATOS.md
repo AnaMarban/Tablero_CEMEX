@@ -11,6 +11,7 @@
 | `GDL - Pruebas Motores - Prueba_v2_sin_macros.xlsx` | Libro de **pruebas de aislamiento de motores** (megger/PdMA), guardado sin macros; su código VBA está en `docs/macros_PruebasMotores.bas`. Hoja `Indice`: un renglón por motor (Hoja, Motor, Área, Tipo, datos de placa, última prueba de Rotor/Armadura y de Estator/Campo con R, IP y Estado, Comentarios, OT, Estatus Activo/No activo, Planta y una columna sin título con el estado general Normal/Precaución/Alarma). Una hoja por motor (`1`…`190`): bloque izquierdo Estator (CA)/Armadura (CD), bloque derecho Rotor (CA)/Campo (CD), límites en filas 13–14 y pruebas desde la fila 19. |
 | `GDL - Pruebas Interruptores_v2_sin_macros.xlsx` | Libro de pruebas de **interruptores** (57), sin macros; código VBA en `docs/macros_PruebasInterruptores.bas`. `Indice` + una hoja por interruptor con 4 bloques: Revisión de condición física, Operación del equipo, Pruebas eléctricas, Relevador de protección. |
 | `GDL - Pruebas Transformadores_v1_sin_macros.xlsx` | Libro de pruebas de **transformadores** (34), sin macros; código VBA en `docs/macros_PruebasTransformadores.bas`. `Indice` + una hoja por transformador con bloques Fisicoquímico del aceite, Cromatografía de gases y Pruebas físicas (eléctricas); BPC y Furanos no tienen columna Estado y no cuentan para el estatus (igual que en el `Indice`). |
+| `Tribologia.txt` | Exportación de **análisis de aceite** de Mobil Serv (Signum): texto UTF-8 separado por "\|", un renglón por muestra (cada renglón termina en salto de página + salto de línea), 239 columnas. 710 muestras de 91 puntos de muestreo, de ene 2025 a oct 2026. |
 | `Tablero_Predictivo_GDL.pbix.zip` | Tablero de Power BI anterior. Páginas: Inicio, Vibraciones, Tribología. Medidas: Equipos P1/P2/DL, Equipos por Estatus; segmentadores por Área, Línea y Sección. |
 
 ## De dónde sale el archivo diario
@@ -55,6 +56,19 @@ El tablero de **Motores** lee el Excel de pruebas (el mismo que la persona abre 
 - Diferencia con Power BI: `PBIAnual` / `BDatos` de transformadores solo consideran las pruebas de aceite, por eso ahí casi todos salen en Buen Estado; el tablero sigue el `Indice`, que incluye las pruebas eléctricas.
 - Error detectado en el libro de transformadores: en el `Indice`, el renglón de la hoja 34 (Alumbrado CCM TRIT-1) lee la hoja `33`. El tablero lee la hoja 34.
 
+## Tribología: criterio y lectura
+
+`parseSignum` (página) y la sección TRIBOLOGÍA de `scripts/build_seed.py` hacen lo mismo:
+
+- **Equipo** = punto de muestreo (`Signum Number`). Se muestra como `Description · Unit ID`, sin repetir el código si ya viene en la descripción.
+- **Área / sección** = lo que va después de "/" en `Name` (Cemento 3, Horno, Transportes…). **Línea** = `Application` traducida (Reductor, Sistema de circulación, Hidráulico, Compresor).
+- **Muestra** = cada renglón (`Date Sampled`, formato mes/día/año). Se quitan duplicados por `Sample ID`.
+- **Estatus** = `Overall Status`: Alert = P1 (Alerta), Caution = P2 (Precaución), Normal = DL.
+- **Diagnóstico y recomendación** = `Comments` del laboratorio. Trae una sección por hallazgo, separadas por "@". El título de cada sección es el diagnóstico (p. ej. "Acción requerida: niveles elevados de silicio") y el resto del texto es la recomendación. Se omite la frase final de contacto con ExxonMobil.
+- **Comentario** = número de muestra, lubricante, edad del aceite, las tres calificaciones (contaminación, desgaste del equipo, condición del aceite) y los parámetros marcados. En cada parámetro, la columna `Status` anterior trae `*` = alerta o `+` = precaución; p. ej. "Si (Silicon) 480 (alerta)".
+- **Muestra vencida**: más de 120 días sin muestra. El muestreo es aproximadamente trimestral (83 días en promedio).
+- Para actualizar se carga el mismo tipo de archivo (`.txt` de Mobil Serv, o el mismo reporte en Excel). La carpeta sincronizada busca archivos con "tribolog", "signum" o "mobil" en el nombre.
+
 ## Identificador de equipo
 
 `Equipo + "|" + Sección` (hay nombres repetidos en dos secciones: BOMBA FULLER, COMPRESOR FULLER, SOPLADOR NORTE). Equivale a `Id. Equipo` del `.xlsm` y de Power BI.
@@ -66,5 +80,6 @@ El tablero de **Motores** lee el Excel de pruebas (el mismo que la persona abre 
 - `seed_motores.json` / `cargas_motores.json`: 188 motores y 1,656 tomas leídas del Excel de pruebas (corte 14/10/2026).
 - `seed_int.json` / `cargas_int.json`: 57 interruptores, 141 tomas (desde 2022).
 - `seed_tra.json` / `cargas_tra.json`: 34 transformadores, 370 tomas (desde 2007).
+- `seed_tri.json` / `cargas_tri.json`: 91 puntos de muestreo de aceite, 710 muestras (ene 2025 – oct 2026).
 - `repair.json`: 55 palabras dañadas → correctas.
 - `originales/`: la exportación y las hojas usadas, en texto, para "Ver formato original".

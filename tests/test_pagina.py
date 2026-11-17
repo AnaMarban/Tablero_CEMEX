@@ -3,9 +3,9 @@
 1. Abre la página: debe mostrar el inicio "Mantenimiento predictivo" con 8 técnicas.
 2. Entra a Vibraciones: historial inicial (341 equipos), recorre todas las vistas e importa data/raw/equipos.xls
    (ya está en la semilla, así que no debe traer equipos nuevos).
-3. Entra a Motores (188), Interruptores (57) y Transformadores (34): historial inicial y carga de su Excel de pruebas
+3. Entra a Tribología (91 puntos de muestreo de Mobil Serv), Motores (188), Interruptores (57) y Transformadores (34): historial inicial y carga de su Excel de pruebas
    (ya está en la semilla, 0 nuevos). Un Excel cargado en la técnica equivocada debe dar aviso.
-4. Regresa al inicio, entra a Tribología (vacía) y le carga un archivo de prueba: los datos deben quedar solo en
+4. Regresa al inicio, entra a Pruebas no destructivas (vacía) y le carga un archivo de prueba: los datos deben quedar solo en
    Tribología y conservarse al recargar.
 Uso:  python scripts/build.py && python tests/test_pagina.py
 """
@@ -93,20 +93,37 @@ async def main():
         assert "transformadores" in err.lower()
         await pg.click("#mClose")
 
+        # Tribología: semilla de Mobil Serv (91 puntos de muestreo); su archivo no trae nada nuevo y un archivo de Orios da aviso
         await pg.click("#btnHome"); await pg.wait_for_timeout(300)
-        await pg.click("#homeBox [data-m=tri]"); await pg.wait_for_timeout(400)
+        await pg.click("#homeBox [data-m=tri]"); await pg.wait_for_timeout(500)
+        corte = " ".join((await pg.text_content("#corte")).split()); print("tribología:", corte)
+        assert "91" in corte
+        for tab in ["areas", "diag", "equipos", "lista", "resumen"]:
+            await pg.click(f"#tabs [data-t={tab}]"); await pg.wait_for_timeout(150)
+        await pg.click("#btnUpload")
+        await pg.set_input_files("#file", str(ROOT / "data/raw/Tribologia.txt")); await pg.wait_for_selector("#mSave", timeout=30000)
+        print("importar en tribología:", await pg.text_content("#mSave"))
+        assert "(0 equipos)" in await pg.text_content("#mSave")
+        await pg.click("#mClose"); await pg.click("#btnUpload")
+        await pg.set_input_files("#file", XLS); await pg.wait_for_timeout(800)
+        assert "Mobil Serv" in await pg.text_content("#mErr")
+        await pg.click("#mClose")
+
+        # Pruebas no destructivas (vacía): se le carga un archivo y debe conservarse al recargar
+        await pg.click("#btnHome"); await pg.wait_for_timeout(300)
+        await pg.click("#homeBox [data-m=pnd]"); await pg.wait_for_timeout(400)
         assert "Sin datos" in await pg.text_content("#corte")
         await pg.click("#btnUpload")
         await pg.set_input_files("#file", XLS); await pg.wait_for_timeout(600)
         await pg.click("#mSave"); await pg.wait_for_timeout(600)
-        print("tribología:", await pg.text_content("#corte"))
+        print("pruebas no destructivas:", await pg.text_content("#corte"))
         assert "341" in await pg.text_content("#corte")
 
         await pg.reload(); await pg.wait_for_timeout(1000)
-        txt = await pg.text_content("#homeBox [data-m=tri]")
+        txt = await pg.text_content("#homeBox [data-m=pnd]")
         print("inicio tras recargar:", " ".join(txt.split())[:80])
         assert "P1" in txt
-        assert "5 de 8" in " ".join((await pg.text_content("#corte")).split())
+        assert "6 de 8" in " ".join((await pg.text_content("#corte")).split())
         assert not errs, errs
         await b.close()
     print("OK: inicio, tablero por técnica e importación funcionan")

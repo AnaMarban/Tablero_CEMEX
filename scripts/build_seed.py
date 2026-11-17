@@ -397,3 +397,94 @@ for mid, fname, orig in [("int", "GDL - Pruebas Interruptores_v2_sin_macros.xlsx
                     duplicados=0, nuevas=sum(len(e["hist"]) for e in eqs), empeoraron=[])],
               open(OUT / f"cargas_{mid}.json", "w"), ensure_ascii=False, indent=1)
     print(f"{mid}: {len(eqs)} equipos, {pr} pruebas, {sum(len(e['hist']) for e in eqs)} tomas, {fut} fechas a futuro ignoradas")
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# TRIBOLOGÍA: exportación de análisis de aceite de Mobil Serv (Signum), texto separado por "|".
+# Misma lógica que parseSignum() en src/template.html: si cambias una, cambia la otra.
+# ---------------------------------------------------------------------------------------------------------------
+TRI_FILE = RAW / "Tribologia.txt"
+SIG_ST = {"alert": "P1", "caution": "P2", "normal": "DL"}
+SIG_RV = {"alert": "alerta", "caution": "precaución", "normal": "normal"}
+SIG_APP = {"geardrive": "Reductor", "circulatingsystem": "Sistema de circulación", "hydraulic": "Hidráulico", "compressor": "Compresor"}
+SIG_RT = [("contaminationrating", "Contaminación"), ("equipmentrating", "Desgaste del equipo"), ("oilrating", "Condición del aceite")]
+SIG_BOILER = re.compile(r"\s*(Contacte a su representante de ExxonMobil[^.]*\.|Para mayor información contacte a su representante[^.]*\.)", re.I)
+
+
+def ws_(v):
+    return re.sub(r"\s+", " ", "" if v is None else str(v)).strip()
+
+
+def cap(t):
+    return t[0].upper() + t[1:] if t else t
+
+
+def parse_signum(text):
+    rows = [l.split("|") for l in re.split(r"\f?\r?\n", text.lstrip("﻿")) if l.strip()]
+    is_head = lambda r: "signumnumber" in [nk(x) for x in r] and "overallstatus" in [nk(x) for x in r]
+    hi = next(i for i, r in enumerate(rows) if is_head(r))
+    H = [ws_(x) for x in rows[hi]]; K = [nk(x) for x in H]
+    ci = lambda k: K.index(k) if k in K else -1
+    cName, cSig, cUnit, cDesc, cApp, cLub = ci("name"), ci("signumnumber"), ci("unitid"), ci("description"), ci("application"), ci("registeredlubricant")
+    cSt, cSid, cDate, cOv, cCom, cAge, cAgeU = ci("samplepointstatus"), ci("sampleid"), ci("datesampled"), ci("overallstatus"), ci("comments"), ci("oilage"), ci("oilageuom")
+    skip = {"overallstatus", "sampleresult", *[k for k, _ in SIG_RT]}
+    flag_cols = [j for j, k in enumerate(K) if k == "status" and j + 1 < len(K) and K[j + 1] not in skip]
+    g = lambda r, j: r[j] if 0 <= j < len(r) else ""
+    hoy = iso(datetime.datetime.now() + datetime.timedelta(days=1))
+    seen, tomas, filas = set(), [], 0
+    for r in rows[hi + 1:]:
+        if len(r) < 5 or not any(ws_(x) for x in r): continue
+        filas += 1
+        sig = ws_(g(r, cSig)); m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})", str(g(r, cDate)))
+        f = f"{m[3]}-{int(m[1]):02d}-{int(m[2]):02d}" if m else ""
+        e = SIG_ST.get(nk(g(r, cOv)))
+        if not sig or not f or not e or f > hoy or not re.search("guadalajara", ws_(g(r, cName)), re.I): continue
+        sid = ws_(g(r, cSid)) or sig + "|" + f
+        if sid in seen: continue
+        seen.add(sid)
+        area = cap(ws_(g(r, cName)).split("/")[-1].strip().lower()) or "Sin área"
+        desc, unit, app = ws_(g(r, cDesc)) or sig, ws_(g(r, cUnit)), ws_(g(r, cApp))
+        flags = [f"{H[j + 1]} {ws_(g(r, j + 1))} ({'alerta' if g(r, j) == '*' else 'precaución'})" for j in flag_cols if g(r, j) in ("*", "+")]
+        rat = " · ".join(f"{n}: {SIG_RV.get(nk(g(r, ci(k))), ws_(g(r, ci(k))))}" for k, n in SIG_RT if ci(k) >= 0 and ws_(g(r, ci(k))))
+        resumen = " · ".join(p for p in [f"Muestra {fmtd(f)}" + (f" · ID {ws_(g(r, cSid))}" if ws_(g(r, cSid)) else ""),
+                                         ("Lubricante " + ws_(g(r, cLub))) if ws_(g(r, cLub)) else "",
+                                         f"Edad del aceite {ws_(g(r, cAge))} {ws_(g(r, cAgeU))}".strip() if ws_(g(r, cAge)) else "",
+                                         rat, ("Fuera de límite: " + ", ".join(flags)) if flags else ""] if p)
+        comp = []
+        if e != "DL":
+            for sec0 in str(g(r, cCom)).split("@"):
+                sec = ws_(sec0)
+                if not sec: continue
+                mm = re.match(r"^(.*?)\.(\s|$)", sec)
+                head = mm[1] if mm else sec
+                body = ws_(SIG_BOILER.sub("", sec[mm.end():] if mm else ""))
+                d = re.match(r"^(.*?)\s*-\s*(.+)$", head)
+                tipo, tema = (d[1], d[2].lower()) if d else ("", head.lower())
+                if re.match(r"^no se requ", head, re.I): continue
+                tl = re.sub(r"^precaucion", "precaución", re.sub(r"^accion", "acción", tipo.lower()))
+                comp.append(dict(c=cap(tema), s=f"{cap(tl)}: {tema}" if tipo else cap(tema), r=body, k=""))
+            if not comp:
+                comp.append(dict(c="Análisis de aceite", s=("Fuera de límite: " + ", ".join(flags)) if flags else ("Alerta" if e == "P1" else "Precaución"), r="", k=""))
+            comp[0]["k"] = resumen
+        else:
+            comp = [dict(c="Análisis de aceite", s="", r="", k=resumen)]
+        tomas.append(dict(id=djb("signum|" + sig), equipo=f"{desc} · {unit}" if unit and unit not in desc else desc, seccion=area, area=area,
+                          linea=SIG_APP.get(nk(app), app), planta="Guadalajara", activo=not re.match(r"^inact", ws_(g(r, cSt)), re.I),
+                          estatus=e, fecha=f, hora="00:00", comp=comp))
+    return tomas, filas
+
+
+tri_tomas, tri_filas = parse_signum(open(TRI_FILE, encoding="utf-8-sig").read())
+by_eq = {}
+for t in sorted(tri_tomas, key=lambda t: t["fecha"]):
+    by_eq.setdefault(t["id"], []).append(t)
+tri_eqs = []
+for tid, ts_ in by_eq.items():
+    last = ts_[-1]
+    hist = [dict(f=t["fecha"], h="00:00", e=t["estatus"], a=t["activo"], comp=t["comp"], src="c_seed_tri") for t in ts_]
+    tri_eqs.append(dict(hist=hist, **{k: last[k] for k in ("id", "equipo", "seccion", "area", "linea", "planta", "activo", "estatus", "fecha", "hora", "comp")}))
+json.dump(tri_eqs, open(OUT / "seed_tri.json", "w"), ensure_ascii=False)
+json.dump([dict(id="c_seed_tri", ts=1794950000000, archivo="Tribologia.txt", fname="Tribologia.txt", corte=max(e["fecha"] for e in tri_eqs),
+                equipos=len(tri_eqs), filas=tri_filas, duplicados=0, nuevas=len(tri_tomas), empeoraron=[])],
+          open(OUT / "cargas_tri.json", "w"), ensure_ascii=False, indent=1)
+print(f"tribología: {len(tri_eqs)} equipos, {len(tri_tomas)} muestras")

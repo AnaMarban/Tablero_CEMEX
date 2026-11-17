@@ -12,7 +12,9 @@ Cada cuadro muestra su resumen P1/P2/DL y abre su propio tablero. Todos los tabl
 - **Interruptores**: Excel "GDL - Pruebas Interruptores" (Fuera de parámetros / Monitorear / Buen estado; bloques Condición física, Operación, Pruebas eléctricas y Relevador).
 - **Transformadores**: Excel "GDL - Pruebas Transformadores" (Fuera de tolerancia / Monitorear / Buen estado; bloques Fisicoquímico del aceite, Cromatografía y Pruebas físicas/eléctricas).
 
-Tribología, Pruebas no destructivas, Bancos de baterías y Relevadores se llenan al cargar su reporte.
+- **Tribología**: exportación de análisis de aceite de Mobil Serv, `.txt` (Alerta / Precaución / Normal; diagnóstico y recomendación del laboratorio).
+
+Pruebas no destructivas, Bancos de baterías y Relevadores se llenan al cargar su reporte.
 
 Tablero para revisar de un vistazo el estado de los equipos monitoreados por vibración en planta Guadalajara. Toma el archivo que exporta **MPC Orios** (`https://cemex.oriosmpc.mx/`), quita duplicados y guarda el historial de cada equipo. Con eso muestra lo que en Orios cuesta trabajo ver:
 

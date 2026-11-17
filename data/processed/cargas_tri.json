@@ -1,0 +1,14 @@
+[
+ {
+  "id": "c_seed_tri",
+  "ts": 1794950000000,
+  "archivo": "Tribologia.txt",
+  "fname": "Tribologia.txt",
+  "corte": "2026-10-08",
+  "equipos": 91,
+  "filas": 710,
+  "duplicados": 0,
+  "nuevas": 710,
+  "empeoraron": []
+ }
+]

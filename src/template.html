@@ -598,7 +598,7 @@ let eqMode="";
 function renderLista(){
   const F=filtered().sort((a,b)=>b.rank-a.rank||String(a.seccion).localeCompare(b.seccion)||String(a.equipo).localeCompare(b.equipo));
   $("#lsTitle").innerHTML=`Lista de diagnóstico <span class="sub mono">(${F.length})</span>`;
-  const diag=e=>{const c=(e.comp||[]).filter(c=>c.s);return c.length?`<div class="dl">${c.map(c=>`<div><b>${esc(c.c)}:</b> ${esc(c.s)}</div>`).join("")}</div>`:`<span class="sub">Sin síntomas</span>`};
+  const diag=e=>{const c=(e.comp||[]).filter(c=>c.s);return c.length?`<div class="dl">${c.map(c=>nk(c.s).includes(nk(c.c))?`<div>${esc(c.s)}</div>`:`<div><b>${esc(c.c)}:</b> ${esc(c.s)}</div>`).join("")}</div>`:`<span class="sub">Sin síntomas</span>`};
   const reco=e=>{const c=(e.comp||[]).filter(c=>c.r);return c.length?`<div class="dl">${c.map(c=>`<div>${(e.comp||[]).length>1?`<b>${esc(c.c)}:</b> `:""}${esc(c.r)}</div>`).join("")}</div>`:`<span class="sub">—</span>`};
   $("#lsTbl tbody").innerHTML=F.length?F.map(e=>`<tr class="row" data-id="${e.id}" tabindex="0">
     <td><span class="pill ${e.estatus}">${lbl(e.estatus)}</span>${e.activo?"":`<div class="sub">Inactivo</div>`}</td>
@@ -724,7 +724,11 @@ function renderCargas(){
 /* módulos de mantenimiento predictivo: cada uno es el mismo tablero con sus propios datos */
 const MODS=[
   {id:"vib",grp:"Mecánico",name:"Vibraciones",desc:"Análisis de vibraciones en equipos rotativos"},
-  {id:"tri",grp:"Mecánico",name:"Tribología",desc:"Análisis de aceite y lubricantes"},
+  {id:"tri",grp:"Mecánico",name:"Tribología",desc:"Análisis de aceite (Mobil Serv): desgaste, contaminación y condición del aceite",parser:"signum",
+    rx:/(tribolog|signum|mobil).*\.(txt|csv|xlsx|xls)$/i,archivo:"Tribologia.txt",vence:120,
+    fuente:"la exportación de análisis de aceite de Mobil Serv (archivo .txt separado por “|”, con columnas Signum Number, Date Sampled, Overall Status y Comments)",
+    labels:{P1:"Alerta",P2:"Precaución",DL:"Normal"},
+    stn:{P1:"Alerta · acción requerida",P2:"Precaución · vigilar",DL:"Normal"}},
   {id:"pnd",grp:"Mecánico",name:"Pruebas no destructivas",desc:"Ultrasonido, líquidos penetrantes, partículas magnéticas, espesores"},
   {id:"mot",grp:"Eléctrico",name:"Motores",desc:"Pruebas de aislamiento (megger / PdMA) de motores",parser:"pruebas",
     rx:/pruebasmotores.*\.(xlsx|xlsm|xls)$/i,archivo:"GDL - Pruebas Motores.xlsm",
@@ -886,6 +890,62 @@ function parsePruebas(wb){
   }
   return {tomas,dup:0,bad,otras,filas:pruebas,futuras};
 }
+/* ---------- Tribología: exportación de análisis de aceite de Mobil Serv (Signum) ----------
+   Texto separado por "|" (cada renglón termina en salto de página + salto de línea) o un Excel con los mismos encabezados.
+   Cada punto de muestreo (Signum Number) es un equipo y cada renglón una muestra.
+   Estatus: Overall Status Alert = P1 (Alerta), Caution = P2 (Precaución), Normal = DL.
+   Diagnóstico y recomendación: el comentario del laboratorio (Comments), con una sección por hallazgo separadas por "@".
+   Parámetros marcados: la columna "Status" anterior a cada parámetro trae "*" (alerta) o "+" (precaución).
+   La misma lógica está en scripts/build_seed.py; si cambias una, cambia la otra. */
+const isSignumHead=r=>{const h=(r||[]).map(nk);return h.includes("signumnumber")&&h.includes("overallstatus")};
+const signumRows=text=>text.replace(/^﻿/,"").split(/\f?\r?\n/).filter(l=>l.trim()).map(l=>l.split("|"));
+function signumSheet(wb){for(const n of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:""});
+  if(rows.slice(0,10).some(isSignumHead))return {name:n,rows}}return null}
+const SIG_ST={alert:"P1",caution:"P2",normal:"DL"},SIG_RV={alert:"alerta",caution:"precaución",normal:"normal"};
+const SIG_APP={geardrive:"Reductor",circulatingsystem:"Sistema de circulación",hydraulic:"Hidráulico",compressor:"Compresor"};
+const SIG_RT=[["contaminationrating","Contaminación"],["equipmentrating","Desgaste del equipo"],["oilrating","Condición del aceite"]];
+const SIG_BOILER=/\s*(Contacte a su representante de ExxonMobil[^.]*\.|Para mayor información contacte a su representante[^.]*\.)/gi;
+function parseSignum(rows){
+  const txt=v=>String(v??"").replace(/\s+/g," ").trim(),cap=t=>t?t[0].toUpperCase()+t.slice(1):t;
+  const p2=n=>String(n).padStart(2,"0");
+  const fecha=v=>{if(v instanceof Date)return `${v.getFullYear()}-${p2(v.getMonth()+1)}-${p2(v.getDate())}`;
+    const m=String(v??"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${p2(m[1])}-${p2(m[2])}`:""};
+  const hi=rows.findIndex(isSignumHead),H=rows[hi].map(txt),K=H.map(nk),ci=k=>K.indexOf(k);
+  const cName=ci("name"),cSig=ci("signumnumber"),cUnit=ci("unitid"),cDesc=ci("description"),cApp=ci("application"),cLub=ci("registeredlubricant"),
+    cSt=ci("samplepointstatus"),cSid=ci("sampleid"),cDate=ci("datesampled"),cOv=ci("overallstatus"),cCom=ci("comments"),cAge=ci("oilage"),cAgeU=ci("oilageuom");
+  const skip=new Set(["overallstatus","sampleresult",...SIG_RT.map(x=>x[0])]);
+  const flagCols=K.map((k,j)=>k==="status"&&j+1<K.length&&!skip.has(K[j+1])?j:-1).filter(j=>j>=0);
+  const hoy=fecha(new Date(Date.now()+864e5)),seen=new Set(),tomas=[];let dup=0,bad=0,otras=0,futuras=0,filas=0;
+  for(const r of rows.slice(hi+1)){
+    if(!r||r.length<5||!r.some(x=>txt(x)))continue;filas++;
+    const sig=txt(r[cSig]),f=fecha(r[cDate]),e=SIG_ST[nk(r[cOv])];
+    if(!sig||!f||!e){bad++;continue}
+    if(f>hoy){futuras++;continue}
+    if(!/guadalajara/i.test(txt(r[cName]))){otras++;continue}
+    const sid=txt(r[cSid])||sig+"|"+f;if(seen.has(sid)){dup++;continue}seen.add(sid);
+    const area=cap((txt(r[cName]).split("/").pop()||"").trim().toLowerCase())||"Sin área";
+    const desc=txt(r[cDesc])||sig,unit=txt(r[cUnit]),app=txt(r[cApp]);
+    const flags=flagCols.filter(j=>r[j]==="*"||r[j]==="+").map(j=>`${H[j+1]} ${txt(r[j+1])} (${r[j]==="*"?"alerta":"precaución"})`);
+    const resumen=[`Muestra ${fmtD(f)}`+(txt(r[cSid])?` · ID ${txt(r[cSid])}`:""),txt(r[cLub])?"Lubricante "+txt(r[cLub]):"",
+      txt(r[cAge])?`Edad del aceite ${txt(r[cAge])} ${txt(r[cAgeU])}`.trim():"",
+      SIG_RT.map(([k,n])=>ci(k)>=0&&txt(r[ci(k)])?`${n}: ${SIG_RV[nk(r[ci(k)])]||txt(r[ci(k)])}`:"").filter(Boolean).join(" · "),
+      flags.length?"Fuera de límite: "+flags.join(", "):""].filter(Boolean).join(" · ");
+    let comp=[];
+    if(e!=="DL"){
+      for(const sec0 of String(r[cCom]??"").split("@")){const sec=txt(sec0);if(!sec)continue;
+        const m=sec.match(/^(.*?)\.(\s|$)/),head=m?m[1]:sec,body=txt((m?sec.slice(m[0].length):"").replace(SIG_BOILER,""));
+        const d=head.match(/^(.*?)\s*-\s*(.+)$/),tipo=d?d[1]:"",tema=(d?d[2]:head).toLowerCase();
+        if(/^no se requ/i.test(head))continue;
+        const tl=tipo.toLowerCase().replace(/^accion/,"acción").replace(/^precaucion/,"precaución");
+        comp.push({c:cap(tema),s:tipo?`${cap(tl)}: ${tema}`:cap(tema),r:body,k:""})}
+      if(!comp.length)comp.push({c:"Análisis de aceite",s:flags.length?"Fuera de límite: "+flags.join(", "):(e==="P1"?"Alerta":"Precaución"),r:"",k:""});
+      comp[0].k=resumen;
+    }else comp=[{c:"Análisis de aceite",s:"",r:"",k:resumen}];
+    tomas.push({id:djb("signum|"+sig),equipo:unit&&!desc.includes(unit)?`${desc} · ${unit}`:desc,seccion:area,area,linea:SIG_APP[nk(app)]||app,
+      planta:"Guadalajara",activo:!/^inact/i.test(txt(r[cSt])),estatus:e,fecha:f,hora:"00:00",comp});
+  }
+  return {tomas,dup,bad,otras,filas,futuras};
+}
 /* ---------- Pruebas por bloques: "GDL - Pruebas Interruptores", "GDL - Pruebas Transformadores" ----------
    Indice: un renglón por equipo (Hoja, Nombre, Ubicación, Tipo, Estatus equipo/Activo, Planta, Estatus general).
    Hoja <n>: varios bloques de prueba lado a lado (Condición física, Operación, Pruebas eléctricas, Relevador /
@@ -992,7 +1052,7 @@ let pending=null,busy=false;
 function openModal(){pending=null;$("#modal").hidden=false;const M=modInfo(S.mod);$("#mTitle").textContent="Actualizar datos de "+M.name.toLowerCase();
   const canDir=typeof window.showDirectoryPicker==="function"&&window.isSecureContext!==false;
   const PB=!!M.parser;
-  const fuente=PB?`<span class="mono">${esc(M.archivo)}</span> (hoja “Indice” y una hoja por equipo con su historial de pruebas)`:`<span class="mono">EquiposOrios.txt</span>, <span class="mono">equipos.xls</span> o <span class="mono">EquiposOriosRed.xlsm</span> (hoja “Ultima Toma”)`;
+  const fuente=M.parser==="signum"?esc(M.fuente):PB?`<span class="mono">${esc(M.archivo)}</span> (hoja “Indice” y una hoja por equipo con su historial de pruebas)`:`<span class="mono">EquiposOrios.txt</span>, <span class="mono">equipos.xls</span> o <span class="mono">EquiposOriosRed.xlsm</span> (hoja “Ultima Toma”)`;
   $("#mBody").innerHTML=(S.mod!=="vib"&&!PB?`<div class="banner">Carga el reporte de <b>${esc(M.name.toLowerCase())}</b> exportado de Orios para planta Guadalajara. Debe traer las mismas columnas que el de vibraciones (Planta, Área, Línea, Sección, Fecha monitoreo, Equipo, Estatus, Componente, Síntoma, Recomendación). Si trae otras, hay que ajustar la lectura.</div>`:"")+
   (canDir?`<div class="card" style="gap:8px"><b>Desde la carpeta sincronizada (SharePoint / OneDrive)</b>
     <div class="sub">Toma el archivo más reciente de la carpeta: ${fuente}. La primera vez elige la carpeta, por ejemplo <b>OneDrive › Tablero predictivo</b> o <span class="mono">C:&#92;7SAP&#92;Export</span>.</div>
@@ -1004,7 +1064,7 @@ function openModal(){pending=null;$("#modal").hidden=false;const M=modInfo(S.mod
   <div class="step"><div><b>Descarga el reporte</b><div class="sub">Clic en el ícono verde de Excel que está junto al embudo (<b>Descargar a CSV</b>). Se descarga “equipos.xls”; no hay que convertirlo.</div></div></div>
   </div></div></details>`)+`
     <label class="drop" id="drop" for="file"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <b style="color:var(--fg)">O arrastra aquí un archivo</b><span class="sub">${PB?esc(M.archivo):".txt o .xls de Orios, o el Excel EquiposOriosRed"}. Se quitan duplicados, se filtra planta Guadalajara y se guarda el original.</span>
+    <b style="color:var(--fg)">O arrastra aquí un archivo</b><span class="sub">${M.parser==="signum"?"Exportación .txt de Mobil Serv (o el mismo reporte en Excel)":PB?esc(M.archivo):".txt o .xls de Orios, o el Excel EquiposOriosRed"}. Se quitan duplicados, se filtra planta Guadalajara y se guarda el original.</span>
     <input type="file" id="file" accept=".txt,.xls,.xlsx,.xlsm,.tsv,.csv,text/plain" hidden></label><div class="err" id="mErr" role="alert"></div>`;
   const d=$("#drop");
   ["dragenter","dragover"].forEach(t=>d.addEventListener(t,ev=>{ev.preventDefault();d.classList.add("over")}));
@@ -1035,6 +1095,7 @@ async function loadFromFolder(change){
 }
 $("#btnUpload").onclick=openModal;
 $("#mClose").onclick=()=>{if(!busy)$("#modal").hidden=true};
+const faltaTxt=M=>M.parser==="signum"?`Para ${M.name} carga ${M.fuente}.`:`Para ${M.name} carga el Excel “${M.archivo}” (con la hoja Indice).`;
 async function readFile(file,note){
   $("#mErr").textContent="";
   if(S.nube)await nubeSync([S.mod]);   /* calcular contra lo último que guardó cualquiera */
@@ -1047,17 +1108,24 @@ async function readFile(file,note){
       if(typeof XLSX==="undefined")throw new Error("Para leer archivos de Excel la página necesita conexión a internet.");
       $("#mErr").textContent="Leyendo el Excel…";await new Promise(r=>setTimeout(r,30));
       const wb=XLSX.read(new Uint8Array(buf),{type:"array",cellDates:true,dense:true});$("#mErr").textContent="";
-      if(isPruebasWb(wb)){
+      const sg=signumSheet(wb);
+      if(sg){
+        if(M.parser!=="signum")throw new Error("Este archivo es de análisis de aceite (tribología). Ábrelo desde el tablero de Tribología en el inicio.");
+        hoja=sg.name;P=parseSignum(sg.rows);
+      }else if(isPruebasWb(wb)){
         if(M.parser!=="pruebas")throw new Error("Este archivo es de pruebas eléctricas (motores). Ábrelo desde el tablero de Motores en el inicio.");
         hoja="Indice + hojas por motor";P=parsePruebas(wb);
       }else if(isBloquesWb(wb)){
         const tit=wbTitulo(wb),de=MODS.find(m=>m.parser==="bloques"&&tit.some(t=>t.includes(nk(m.name))));
         if(M.parser!=="bloques"||(de&&de.id!==M.id))throw new Error(`Este archivo es de pruebas de ${de?de.name.toLowerCase():"equipos eléctricos"}. Ábrelo desde ${de?"el tablero de "+de.name:"su tablero"} en el inicio.`);
         hoja="Indice + hojas por equipo";P=parseBloques(wb,M);
-      }else{if(M.parser)throw new Error(`Para ${M.name} carga el Excel “${M.archivo}” (con la hoja Indice).`);
+      }else{if(M.parser)throw new Error(faltaTxt(M));
         const w=workbookRows(buf,wb);hoja=w.sheet;P=parseRows(w.rows)}
-    }else P=parseFile(decode(buf));
-    if(M.parser&&!isWb)throw new Error(`Para ${M.name} carga el Excel “${M.archivo}” (con la hoja Indice).`);
+    }else{const text=decode(buf),sr=signumRows(text.slice(0,200000));
+      if(sr.slice(0,5).some(isSignumHead)){
+        if(M.parser!=="signum")throw new Error("Este archivo es de análisis de aceite (tribología). Ábrelo desde el tablero de Tribología en el inicio.");
+        P=parseSignum(signumRows(text));
+      }else{if(M.parser)throw new Error(faltaTxt(M));P=parseFile(text)}}
     if(!P.tomas.length)throw new Error("No encontré equipos de planta Guadalajara en el archivo.");
     const ts=Date.now(),src="c"+ts;
     let nuevas=0,nuevosEq=0;const worse=[],changes=new Map();
@@ -1147,7 +1215,7 @@ async function exportXlsx(){
     return {Estatus:lbl(e.estatus),Equipo:e.equipo,"Sección":e.seccion,"Área":e.area,"Línea":e.linea,Activo:e.activo?"Sí":"No",
     "Último monitoreo":fmtD(e.fecha),"Falla desde":e.desde?(e.exacto?"":"al menos ")+fmtD(e.desde):"","Días en falla":e.dias??"",
     "Número de muestras":e.ntomas,Tendencia:e.prev?`${lbl(e.prev.e)} → ${lbl(e.estatus)}`:"1ª muestra",
-    "Diagnóstico":cut(D.map(c=>(one(e,D)?c.c+": ":"")+c.s).join(" | ")),
+    "Diagnóstico":cut(D.map(c=>(one(e,D)&&!nk(c.s).includes(nk(c.c))?c.c+": ":"")+c.s).join(" | ")),
     "Recomendación":cut(R.map(c=>(one(e,R)?c.c+": ":"")+c.r).join(" | ")),
     "Comentario del analista":cut(K.map(c=>(K.length>1?c.c+": ":"")+c.k).join(" | ")),
     "Historial de estatus (más reciente primero)":cut([...(e.hist||[])].reverse().map(h=>fmtD(h.f)+" "+lbl(h.e)).join(" · "))}});
