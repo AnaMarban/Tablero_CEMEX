@@ -1,0 +1,18 @@
+# Netlify: compila y publica la carpeta dist/ y el servicio del historial compartido.
+# Al abrir la dirección del sitio se muestra el tablero (dist/Cemex_Orios.html).
+# Clave para guardar: Site configuration > Environment variables > ORIOS_CLAVE (ver docs/NETLIFY.md).
+[build]
+  publish = "dist"
+  # Netlify arma dist/ desde src/ en cada subida: basta editar src/template.html y subirlo (solo usa Python estándar)
+  command = "python3 scripts/build.py"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/"
+  to = "/Cemex_Orios.html"
+  status = 200

@@ -1,0 +1,9 @@
+{
+  "name": "cemex-orios",
+  "private": true,
+  "type": "module",
+  "description": "Mantenimiento predictivo GDL. Solo se usa para el historial compartido en Netlify (netlify/functions).",
+  "dependencies": {
+    "@netlify/blobs": "11.1.6"
+  }
+}
