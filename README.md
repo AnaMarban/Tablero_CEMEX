@@ -1,4 +1,13 @@
-# Mantenimiento predictivo · Planta Guadalajara
+# Portal de mantenimiento · Planta Guadalajara
+
+El **inicio** muestra la banda "Información de mantenimiento" con un buscador de técnicas y equipos, las tarjetas de cada técnica (filtro Todas / Mecánico / Eléctrico) y la sección **Consulta por área**.
+
+En el menú de arriba hay dos páginas más:
+
+- **Histórico**: estado actual de cada técnica y todas las actualizaciones cargadas.
+- **Documentación**: de dónde sale cada técnica, su criterio de estatus y cómo actualizarla.
+
+Las fotos de las tarjetas van en `assets/fotos/` (ver su README). La liga del tablero de Envase se pone en `AREAS`, dentro de `src/template.html`.
 
 La pantalla de inicio, **Mantenimiento predictivo**, agrupa las técnicas en dos bloques:
 

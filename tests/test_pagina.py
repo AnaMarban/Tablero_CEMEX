@@ -33,9 +33,19 @@ async def main():
         pg.on("pageerror", lambda e: errs.append(str(e)))
         await pg.goto(PAGE)
         await pg.wait_for_timeout(1200)
-        tiles = await pg.query_selector_all("#homeBox .tile")
+        tiles = await pg.query_selector_all("#homeBox .mcard")
         print("técnicas en inicio:", len(tiles))
         assert len(tiles) == 8
+
+        # buscador del inicio, histórico y documentación
+        await pg.fill("#hQ", "molino"); await pg.wait_for_timeout(500)
+        nres = len(await pg.query_selector_all("#hRes [data-i]")); print("buscar 'molino':", nres, "resultados"); assert nres > 0
+        await pg.fill("#hQ", ""); await pg.wait_for_timeout(300)
+        await pg.click("nav.mainnav [data-nav=hist]"); await pg.wait_for_timeout(400)
+        assert "Estado actual por técnica" in await pg.text_content("#homeBox")
+        await pg.click("nav.mainnav [data-nav=docs]"); await pg.wait_for_timeout(400)
+        assert "Cómo actualizar" in await pg.text_content("#homeBox")
+        await pg.click("nav.mainnav [data-nav=inicio]"); await pg.wait_for_timeout(400)
 
         await pg.click("#homeBox [data-m=vib]"); await pg.wait_for_timeout(600)
         corte = await pg.text_content("#corte"); print("vibraciones:", corte)
@@ -122,8 +132,8 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(1000)
         txt = await pg.text_content("#homeBox [data-m=pnd]")
         print("inicio tras recargar:", " ".join(txt.split())[:80])
-        assert "P1" in txt
-        assert "6 de 8" in " ".join((await pg.text_content("#corte")).split())
+        assert "Sin datos" not in txt
+        assert (await pg.text_content("#corte")).strip() == ""   # el inicio ya no muestra resumen en el encabezado
         assert not errs, errs
         await b.close()
     print("OK: inicio, tablero por técnica e importación funcionan")

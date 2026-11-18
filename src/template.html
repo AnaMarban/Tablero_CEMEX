@@ -48,6 +48,8 @@ nav.crumbs button{border-radius:999px;padding:5px 12px;font-size:14px}
 nav.crumbs #btnHome{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600;padding:6px 14px 6px 10px}
 nav.crumbs #btnHome:hover{background:var(--brand-2)}
 nav.crumbs .clogo{width:34px;height:34px;border-radius:50%;display:block}
+nav.crumbs .corte{text-align:right;font-size:13px}
+nav.crumbs{flex-wrap:wrap}
 /* filtros de opción múltiple */
 .ms{position:relative}
 .ms .msb{min-width:190px;justify-content:space-between;max-width:280px}
@@ -64,8 +66,66 @@ nav.crumbs .clogo{width:34px;height:34px;border-radius:50%;display:block}
 nav.crumbs .ct{font-family:var(--font-d);font-size:18px;font-weight:600}
 nav.crumbs .cg{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);font-family:var(--font-d)}
 .home{display:grid;gap:22px;max-width:1100px;margin:0 auto;width:100%}
-body.homemode{background:var(--brand-soft)}
-body.homemode header.top{border-bottom:3px solid var(--brand)}
+/* ---------- portal (inicio, histórico, documentación) ---------- */
+:root{--red:#d71920}
+header.top{border-bottom:3px solid var(--red)!important}
+.brand .sep{width:1px;height:40px;background:var(--line-strong)}
+.brand .bt h1{color:var(--brand)}
+.brand .bt span{text-transform:none;letter-spacing:0;font-size:15px;color:var(--fg-2);font-family:var(--font-b,inherit)}
+nav.mainnav{display:flex;gap:2px;align-self:stretch;align-items:stretch}
+nav.mainnav button{border:0;background:none;border-radius:0;font-size:15px;padding:8px 14px;color:var(--fg);border-bottom:3px solid transparent;margin-bottom:-3px}
+nav.mainnav button:hover{color:var(--brand);background:none}
+nav.mainnav button[aria-current="page"]{color:var(--brand);font-weight:700;border-bottom-color:var(--brand)}
+.home{max-width:1240px!important}
+.hero{background:var(--brand);color:#fff;border-radius:6px;padding:22px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 28px;align-items:center}
+.hero .hl{border-left:5px solid var(--red);padding-left:20px;display:grid;gap:2px}
+.hero .eyebrow{font-size:13px;font-weight:700;letter-spacing:.05em}
+.hero h2{font-size:30px;color:#fff;margin:0;line-height:1.15}
+.hero .hl .hs{font-size:16px;opacity:.92}
+.hero .hr{display:flex;align-items:center;gap:22px}
+.hsearch{display:flex;align-items:center;gap:8px;background:#fff;border-radius:4px;padding:0 12px;width:min(400px,62vw);color:#1b2a4a}
+.hsearch input{border:0;outline:0;padding:10px 0;width:100%;font-size:15px;background:transparent;color:#1b2a4a;box-shadow:none}
+.hero .per{border-left:1px solid rgb(255 255 255 / .5);padding-left:22px;display:grid;font-size:13px;opacity:.95}
+.hero .per b{font-size:16px}
+.hres{grid-column:1/-1;background:#fff;color:#1b2a4a;border-radius:6px;max-height:380px;overflow:auto;display:grid}
+.hres button{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;text-align:left;padding:9px 14px;border:0;border-bottom:1px solid #e3e7ef;border-radius:0;background:#fff;color:#1b2a4a;width:100%}
+.hres button:hover{background:#eef2fb}
+.hres .sub{color:#5b6680}
+.sech{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sech h2{font-size:26px;color:var(--brand);margin:0}
+.seg{display:flex;gap:8px}
+.seg button{min-width:104px;justify-content:center;border-radius:4px}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px}
+.mcard{display:grid;grid-template-rows:auto 1fr;padding:0;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--panel);text-align:left;width:100%;box-shadow:0 1px 3px rgb(0 0 0 / .06);align-items:stretch;justify-items:stretch}
+.mcard:hover{border-color:var(--brand);box-shadow:0 6px 18px rgb(11 45 143 / .16);background:var(--panel)}
+.cimg{aspect-ratio:16/6;background:linear-gradient(135deg,#dbe3f4,#f3f6fc);display:grid;place-items:center;position:relative;overflow:hidden;color:var(--brand)}
+.cimg img.foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cimg img.lg{width:78px;height:78px;border-radius:50%}
+.cimg .badge{position:absolute;top:10px;right:10px}
+.mcard .cb{display:grid;gap:3px;padding:12px 22px 14px;align-content:start}
+.mcard .eyebrow{font-size:12px;font-weight:700;color:var(--fg-2);letter-spacing:.05em;text-transform:uppercase}
+.mcard .cn{display:flex;gap:10px;align-items:center;font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--brand)}
+.mcard .cn::before{content:"";flex:none;width:4px;height:22px;background:var(--red);border-radius:1px}
+.mcard .cs{padding-left:14px;color:var(--fg);font-size:15px}
+.mcard .cf{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;color:var(--brand);font-weight:600;font-size:15px}
+.mcard .cf svg,.areacard .abtn svg{color:var(--red)}
+.areacard{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr) auto;gap:24px;align-items:center;border:1px solid var(--line-strong);border-radius:6px;padding:8px 28px 8px 8px;background:var(--panel)}
+.areacard .cimg{aspect-ratio:16/4.6;border-radius:4px}
+.areacard .an{display:flex;gap:10px;align-items:center;font-family:var(--font-d);font-size:28px;font-weight:700;color:var(--brand)}
+.areacard .an::before{content:"";width:4px;height:26px;background:var(--red)}
+.areacard .as{font-size:16px;padding-left:14px}
+.areacard .ad{font-size:14px;color:var(--fg-2);padding-left:14px}
+.areacard .abtn{background:var(--brand);color:#fff;border:0;border-left:5px solid var(--red);border-radius:3px;padding:11px 18px;font-weight:600;font-size:16px;gap:14px}
+.areacard .abtn svg{color:#fff}
+.pcard{display:grid;gap:12px}
+.pcard h3{margin:0;color:var(--brand);font-size:18px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px}
+.dgrid .card{gap:8px}
+.dgrid dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:0;font-size:14px}
+.dgrid dt{color:var(--fg-2)}
+.dgrid dd{margin:0}
+@media (max-width:760px){.hero{grid-template-columns:1fr}.hero .hr{flex-wrap:wrap}.hero .per{border:0;padding:0}.areacard{grid-template-columns:1fr;padding:8px}nav.mainnav button{padding:8px 8px;font-size:14px}}
 .home .ht{background:linear-gradient(120deg,var(--brand),var(--brand-2));color:#fff;border-radius:16px;padding:26px 18px 22px}
 .home .ht .sub{color:rgb(255 255 255 / .88);font-size:14px}
 .home .ht{text-align:center;display:grid;gap:4px;padding-block:8px 4px}
@@ -225,13 +285,15 @@ td.num{text-align:right;font-family:var(--font-m);font-variant-numeric:tabular-n
 <header class="top">
   <div class="wrap">
     <div class="hrow">
-      <div class="brand">__LOGO__<div class="bt"><h1 style="font-size:22px">Mantenimiento predictivo</h1><span>Planta Guadalajara</span></div></div>
-      <div class="grow corte" id="corte">Cargando historial…</div>
-      <button class="primary" id="btnUpload" type="button"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Actualizar</button>
-      <button id="btnExport" type="button" hidden><svg class="xl-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="18" rx="3" fill="#1d6f42"/><path d="M13 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6z" fill="#33a165"/><path d="M6.5 8l4 8m0-8l-4 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M15 8h4M15 12h4M15 16h4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".9"/></svg>Exportar a Excel</button>
+      <div class="brand">__LOGO__<span class="sep" aria-hidden="true"></span><div class="bt"><h1 style="font-size:22px">Portal de mantenimiento</h1><span>Planta Guadalajara</span></div></div>
+      <div class="grow"></div>
+      <nav class="mainnav" aria-label="Secciones"><button type="button" data-nav="inicio">Inicio</button><button type="button" data-nav="hist">Histórico</button><button type="button" data-nav="docs">Documentación</button></nav>
     </div>
     <nav class="crumbs" id="crumbs" aria-label="Ubicación" hidden>
       <button type="button" id="btnHome"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h5v-5.5h3V20h5V9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Inicio</button><img class="clogo" id="crumbL" alt="" hidden><span class="cg" id="crumbG"></span><span class="ct" id="crumbT"></span>
+      <div class="grow corte" id="corte">Cargando historial…</div>
+      <button class="primary" id="btnUpload" type="button"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Actualizar</button>
+      <button id="btnExport" type="button" hidden><svg class="xl-ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="18" rx="3" fill="#1d6f42"/><path d="M13 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-6z" fill="#33a165"/><path d="M6.5 8l4 8m0-8l-4 8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M15 8h4M15 12h4M15 16h4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".9"/></svg>Exportar a Excel</button>
     </nav>
   </div>
 </header>
@@ -425,7 +487,8 @@ function cargaById(id){return S.cargas.find(c=>c.id===id)}
 let rT=0;function renderAll(){cancelAnimationFrame(rT);rT=requestAnimationFrame(_render)}
 function _render(){
   renderHeader();
-  const home=S.mod==="home";document.body.classList.toggle("homemode",home);$("#vibBar").hidden=home;$("#crumbs").hidden=home;$("#btnUpload").hidden=home;$("#btnExport").hidden=home||typeof XLSX==="undefined";
+  const home=S.mod==="home";document.body.classList.toggle("homemode",home);
+  $$("nav.mainnav [data-nav]").forEach(b=>{if(home&&b.dataset.nav===S.hv)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});$("#vibBar").hidden=home;$("#crumbs").hidden=home;$("#btnUpload").hidden=home;$("#btnExport").hidden=home||typeof XLSX==="undefined";
   const M=home?null:modInfo(S.mod),vacio=!home&&!S.eq.size&&S.mode!=="loading";
   if(vacio){$("#vibBar").hidden=true;$("#btnExport").hidden=true}
   $$("[data-view]").forEach(v=>v.hidden=home?v.id!=="v-home":vacio?v.id!=="v-empty":v.id!=="v-"+S.tab);
@@ -440,8 +503,8 @@ function _render(){
   ({resumen:renderResumen,areas:renderAreas,diag:renderDiag,equipos:renderEquipos,lista:renderLista,rutas:renderRutas,cargas:renderCargas})[S.tab]();
 }
 function renderHeader(){
-  if(S.mod==="home"){const conD=MODS.filter(m=>S.store[m.id]&&S.store[m.id].eq.size).length;
-    $("#corte").innerHTML=S.mode==="loading"?"Cargando historial…":`Planta Guadalajara · <b>${conD}</b> de ${MODS.length} técnicas con datos`+(S.nube?` · <b style="color:var(--dl)">● datos compartidos</b>`:"");return}
+  if(S.mod==="home"){   /* en el inicio no se muestra resumen en el encabezado */
+    $("#corte").innerHTML=S.mode==="loading"?"Cargando historial…":"";return}
   const n=S.eq.size;
   if(!n){$("#corte").innerHTML=S.mode==="loading"?"Cargando historial…":`Sin datos de ${esc(modInfo(S.mod).name.toLowerCase())} todavía. Usa <b>Actualizar</b> para cargar el reporte de Orios.`;return}
   const corte=[...S.eq.values()].map(e=>e.fecha).sort().pop();
@@ -723,27 +786,27 @@ function renderCargas(){
 
 /* módulos de mantenimiento predictivo: cada uno es el mismo tablero con sus propios datos */
 const MODS=[
-  {id:"vib",grp:"Mecánico",name:"Vibraciones",desc:"Análisis de vibraciones en equipos rotativos"},
-  {id:"tri",grp:"Mecánico",name:"Tribología",desc:"Análisis de aceite (Mobil Serv): desgaste, contaminación y condición del aceite",parser:"signum",
+  {id:"vib",sub:"Condición de equipos rotativos",grp:"Mecánico",name:"Vibraciones",desc:"Análisis de vibraciones en equipos rotativos"},
+  {id:"tri",sub:"Análisis de aceite y lubricantes",grp:"Mecánico",name:"Tribología",desc:"Análisis de aceite (Mobil Serv): desgaste, contaminación y condición del aceite",parser:"signum",
     rx:/(tribolog|signum|mobil).*\.(txt|csv|xlsx|xls)$/i,archivo:"Tribologia.txt",vence:120,
     fuente:"la exportación de análisis de aceite de Mobil Serv (archivo .txt separado por “|”, con columnas Signum Number, Date Sampled, Overall Status y Comments)",
     labels:{P1:"Alerta",P2:"Precaución",DL:"Normal"},
     stn:{P1:"Alerta · acción requerida",P2:"Precaución · vigilar",DL:"Normal"}},
-  {id:"pnd",grp:"Mecánico",name:"Pruebas no destructivas",desc:"Ultrasonido, líquidos penetrantes, partículas magnéticas, espesores"},
-  {id:"mot",grp:"Eléctrico",name:"Motores",desc:"Pruebas de aislamiento (megger / PdMA) de motores",parser:"pruebas",
+  {id:"pnd",sub:"Evaluación de integridad",grp:"Mecánico",name:"Pruebas no destructivas",desc:"Ultrasonido, líquidos penetrantes, partículas magnéticas, espesores"},
+  {id:"mot",sub:"Aislamiento y condición eléctrica",grp:"Eléctrico",name:"Motores",desc:"Pruebas de aislamiento (megger / PdMA) de motores",parser:"pruebas",
     rx:/pruebasmotores.*\.(xlsx|xlsm|xls)$/i,archivo:"GDL - Pruebas Motores.xlsm",
     labels:{P1:"Alarma",P2:"Precaución",DL:"Normal"},
     stn:{P1:"Alarma · aislamiento < 75 MΩ",P2:"Precaución · aislamiento < 100 MΩ",DL:"Normal"}},
-  {id:"int",grp:"Eléctrico",name:"Interruptores",desc:"Condición física, operación, pruebas eléctricas y relevador de protección",parser:"bloques",
+  {id:"int",sub:"Operación y pruebas eléctricas",grp:"Eléctrico",name:"Interruptores",desc:"Condición física, operación, pruebas eléctricas y relevador de protección",parser:"bloques",
     rx:/pruebasinterruptores.*\.(xlsx|xlsm|xls)$/i,archivo:"GDL - Pruebas Interruptores.xlsm",vence:1095,
     labels:{P1:"Fuera de parámetros",P2:"Monitorear",DL:"Buen estado"},
     stn:{P1:"Fuera de parámetros · requiere acción",P2:"Monitorear · seguimiento",DL:"Buen estado"}},
-  {id:"tra",grp:"Eléctrico",name:"Transformadores",desc:"Aceite (fisicoquímico y cromatografía) y pruebas eléctricas",parser:"bloques",
+  {id:"tra",sub:"Aceite y pruebas eléctricas",grp:"Eléctrico",name:"Transformadores",desc:"Aceite (fisicoquímico y cromatografía) y pruebas eléctricas",parser:"bloques",
     rx:/pruebastransformadores.*\.(xlsx|xlsm|xls)$/i,archivo:"GDL - Pruebas Transformadores.xlsm",vence:365,
     labels:{P1:"Fuera de tolerancia",P2:"Monitorear",DL:"Buen estado"},
     stn:{P1:"Fuera de tolerancia · requiere acción",P2:"Monitorear · seguimiento",DL:"Buen estado"}},
-  {id:"bat",grp:"Eléctrico",name:"Bancos de baterías",desc:"Capacidad e impedancia de bancos de baterías"},
-  {id:"rel",grp:"Eléctrico",name:"Relevadores",desc:"Pruebas de relevadores de protección"}];
+  {id:"bat",sub:"Capacidad y estado de celdas",grp:"Eléctrico",name:"Bancos de baterías",desc:"Capacidad e impedancia de bancos de baterías"},
+  {id:"rel",sub:"Pruebas de protecciones",grp:"Eléctrico",name:"Relevadores",desc:"Pruebas de relevadores de protección"}];
 /* días sin prueba para considerarla vencida (en los libros de pruebas: interruptores 3 años, transformadores 1 año) */
 const venceD=()=>modInfo(S.mod).vence||90,venceTxt=()=>{const d=venceD();return d>=365?(d===365?"1 año":Math.round(d/365)+" años"):d+" días"};
 const modInfo=id=>MODS.find(m=>m.id===id)||{id,grp:"",name:id,desc:""};
@@ -754,22 +817,85 @@ function setLabels(){const M=S.mod==="home"?{}:modInfo(S.mod);LBL=M.labels||LBL_
 function openMod(id){syncStore();S.mod=id;setLabels();
   if(id!=="home"){S.eq=S.store[id].eq;S.cargas=S.store[id].cargas;S.tab="resumen";eqMode="";$$("#tabs [role=tab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.t==="resumen"))}
   closeDrawer();window.scrollTo({top:0});renderAll()}
-$("#btnHome").onclick=()=>openMod("home");
 /* logo de cada técnica (versión archivo; el Artifact no lleva marca) y un ícono genérico cuando no hay logo */
 const MODLOGOS=__MODLOGOS__;
 const TILE_ICON=`<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18h3l2.5-7 4 10 3-8 1.5 5H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 4h10v6H7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 7h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
-function renderHome(){
-  const grps=[...new Set(MODS.map(m=>m.grp))];
-  $("#homeBox").innerHTML=`<div class="ht"><h2>Mantenimiento predictivo</h2><span class="sub">Planta Guadalajara · elige una técnica para ver su tablero</span></div>`+
-  grps.map(g=>`<section class="grp"><div class="gh"><span class="lbl">${esc(g)}</span></div><div class="tiles">${MODS.filter(m=>m.grp===g).map(m=>{
-    const st=S.store[m.id],E=[...st.eq.values()].filter(e=>e.activo);const c={P1:0,P2:0,DL:0};E.forEach(e=>c[e.estatus]=(c[e.estatus]||0)+1);const tot=E.length;
-    const last=st.cargas[0];const corte=[...st.eq.values()].map(e=>e.fecha).sort().pop();
-    return `<button type="button" class="tile ${st.eq.size?"":"nodata"}" data-m="${m.id}"><span class="tlogo">${MODLOGOS[m.id]?`<img src="${MODLOGOS[m.id]}" alt="">`:TILE_ICON}</span><span class="tbody"><span class="tn">${esc(m.name)}</span><span class="td">${esc(m.desc)}</span>
-      <span class="tb2">${tot?["P1","P2","DL"].map(k=>`<i style="width:${c[k]/tot*100}%;background:var(--${k.toLowerCase()})"></i>`).join(""):""}</span>
-      ${st.eq.size?`<span class="tc">${["P1","P2","DL"].map(k=>`<span class="pill ${k}">${(m.labels||LBL_DEF)[k]} ${c[k]}</span>`).join("")}</span><span class="td">Último monitoreo ${fmtD(corte)}${last?` · actualizado ${new Date(last.ts).toLocaleDateString("es-MX",{day:"2-digit",month:"short"})}`:""}</span>`
-        :`<span class="td">Sin datos todavía · abre y presiona Actualizar para cargar su reporte</span>`}</span></button>`}).join("")}</div></section>`).join("");
+/* fotos de cada técnica y de las áreas (assets/fotos/<id>.jpg, solo versión archivo); mientras no haya foto se muestra el logo */
+const MODFOTOS=__MODFOTOS__;
+/* áreas con su propio tablero (p. ej. el de fallas de envase): pon su liga en url */
+const AREAS=[{id:"envase",name:"Envase",sub:"Reportes de fallas · Dynamix y Ventochek",det:"Paletizadora · Granel",url:""}];
+const ARROW=`<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SEARCH_ICO=`<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+S.hv="inicio";S.hg="";S.hq="";
+const imgBox=(id,extra="")=>`<span class="cimg">${MODFOTOS[id]?`<img class="foto" src="${MODFOTOS[id]}" alt="">`:MODLOGOS[id]?`<img class="lg" src="${MODLOGOS[id]}" alt="">`:TILE_ICON}${extra}</span>`;
+const modStats=m=>{const st=S.store[m.id],E=[...st.eq.values()].filter(e=>e.activo),c={P1:0,P2:0,DL:0};E.forEach(e=>c[e.estatus]=(c[e.estatus]||0)+1);
+  return {st,c,tot:E.length,corte:[...st.eq.values()].map(e=>e.fecha).sort().pop(),last:st.cargas[0]}};
+function renderHome(){({inicio:homeInicio,hist:homeHist,docs:homeDocs})[S.hv]()}
+function homeInicio(){
+  const per=new Date().toLocaleDateString("es-MX",{month:"long",year:"numeric"});
+  const cards=MODS.filter(m=>!S.hg||m.grp===S.hg).map(m=>{const {st,c}=modStats(m);const L=m.labels||LBL_DEF;
+    const badge=!st.eq.size?`<span class="pill badge" style="background:#fff;color:var(--fg-2)">Sin datos</span>`:c.P1?`<span class="pill P1 badge">${c.P1} ${esc(L.P1)}</span>`:"";
+    return `<button type="button" class="mcard" data-m="${m.id}">${imgBox(m.id,badge)}<span class="cb"><span class="eyebrow">${esc(m.grp)}</span>
+      <span class="cn">${esc(m.name)}</span><span class="cs">${esc(m.sub||m.desc)}</span><span class="cf">Consultar tablero ${ARROW}</span></span></button>`}).join("");
+  $("#homeBox").innerHTML=`<section class="hero"><div class="hl"><span class="eyebrow">PLANTA GUADALAJARA</span><h2>Información de mantenimiento</h2><span class="hs">Consulta por técnica y área</span></div>
+    <div class="hr"><label class="hsearch">${SEARCH_ICO}<input id="hQ" type="search" placeholder="Buscar técnica o equipo" aria-label="Buscar técnica o equipo" autocomplete="off" value="${esc(S.hq)}"></label>
+    <div class="per"><span>Periodo actual</span><b>${esc(per[0].toUpperCase()+per.slice(1))}</b></div></div><div class="hres" id="hRes" hidden></div></section>
+    <div class="sech"><h2>Técnicas de mantenimiento</h2><div class="seg" role="group" aria-label="Tipo">${[["","Todas"],["Mecánico","Mecánico"],["Eléctrico","Eléctrico"]].map(([g,t])=>`<button type="button" data-g="${g}" aria-pressed="${S.hg===g}">${t}</button>`).join("")}</div></div>
+    <div class="cards">${cards}</div>
+    <div class="sech"><h2>Consulta por área</h2></div>
+    ${AREAS.map(a=>`<div class="areacard">${imgBox(a.id)}<div style="display:grid;gap:4px"><span class="an">${esc(a.name)}</span><span class="as">${esc(a.sub)}</span><span class="ad">${esc(a.det)}</span></div>
+      <button type="button" class="abtn" data-area="${a.id}">Consultar área ${ARROW}</button></div>`).join("")}`;
   $$("#homeBox [data-m]").forEach(b=>b.onclick=()=>openMod(b.dataset.m));
+  $$("#homeBox [data-g]").forEach(b=>b.onclick=()=>{S.hg=b.dataset.g;renderAll()});
+  $$("#homeBox [data-area]").forEach(b=>b.onclick=()=>{const a=AREAS.find(x=>x.id===b.dataset.area);
+    if(a.url)window.open(a.url,"_blank","noopener");else toast(`Falta la liga del tablero de ${a.name}: agrégala en AREAS (src/template.html).`)});
+  const q=$("#hQ");let t;q.oninput=()=>{clearTimeout(t);t=setTimeout(()=>{S.hq=q.value;homeSearch()},150)};
+  q.onkeydown=ev=>{if(ev.key==="Escape"){q.value="";S.hq="";homeSearch()}};
+  if(S.hq)homeSearch();
 }
+/* buscador del inicio: técnicas y equipos de todas las técnicas */
+function homeSearch(){const box=$("#hRes"),q=nk(S.hq);if(!box)return;if(q.length<2){box.hidden=true;box.innerHTML="";return}
+  const res=[];MODS.forEach(m=>{if(nk(m.name).includes(q))res.push({m,e:null})});
+  for(const m of MODS){for(const e of S.store[m.id].eq.values()){if(res.length>=40)break;if(nk(e.equipo+" "+e.seccion+" "+e.area).includes(q))res.push({m,e})}}
+  box.hidden=false;
+  box.innerHTML=res.length?res.map((r,i)=>`<button type="button" data-i="${i}"><span><b>${esc(r.e?r.e.equipo:r.m.name)}</b><br><span class="sub">${r.e?`${esc(r.m.name)} · ${esc(r.e.seccion)} · ${fmtD(r.e.fecha)}`:"Abrir el tablero de la técnica"}</span></span>
+    ${r.e?`<span class="pill ${r.e.estatus}">${esc((r.m.labels||LBL_DEF)[r.e.estatus])}</span>`:`<span>${ARROW}</span>`}</button>`).join(""):`<div class="sub" style="padding:12px 14px">Sin resultados para “${esc(S.hq)}”.</div>`;
+  $$("#hRes [data-i]").forEach(b=>b.onclick=()=>{const r=res[+b.dataset.i];S.hq="";openMod(r.m.id);if(r.e)setTimeout(()=>openDrawer(r.e.id),80)});
+}
+function homeHist(){
+  const rows=MODS.map(m=>{const {st,c,tot,corte,last}=modStats(m);const L=m.labels||LBL_DEF;
+    return `<tr class="row" data-m="${m.id}" tabindex="0"><td><b>${esc(m.name)}</b><div class="sub">${esc(m.grp)}</div></td><td class="num">${st.eq.size?tot:"—"}</td>
+      ${["P1","P2","DL"].map(k=>`<td>${st.eq.size?`<span class="pill ${k}">${esc(L[k])} ${c[k]}</span>`:"—"}</td>`).join("")}
+      <td class="num">${corte?fmtD(corte):"—"}</td><td class="num">${last?new Date(last.ts).toLocaleDateString("es-MX",{day:"numeric",month:"short",year:"numeric"}):"—"}</td></tr>`}).join("");
+  const all=MODS.flatMap(m=>S.store[m.id].cargas.map(c=>({m,c}))).sort((a,b)=>b.c.ts-a.c.ts).slice(0,200);
+  $("#homeBox").innerHTML=`<div class="sech"><h2>Histórico</h2></div>
+    <div class="card pcard"><h3>Estado actual por técnica</h3><span class="sub">Equipos activos. Clic en una técnica para abrir su tablero.</span>
+      <div class="tbl-wrap"><table><thead><tr><th>Técnica</th><th>Equipos</th><th>Crítico</th><th>Atención</th><th>Normal</th><th>Último monitoreo</th><th>Última actualización</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+    <div class="card pcard"><h3>Actualizaciones de todas las técnicas</h3><span class="sub">Cada archivo cargado, el más reciente arriba. Clic para ver el detalle en su técnica.</span>
+      <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Técnica</th><th>Archivo</th><th>Corte</th><th>Equipos</th><th>Muestras nuevas</th></tr></thead><tbody>${all.length?all.map(({m,c})=>`<tr class="row" data-mc="${m.id}" tabindex="0">
+        <td class="num">${new Date(c.ts).toLocaleDateString("es-MX",{day:"numeric",month:"short",year:"numeric"})}</td><td>${esc(m.name)}</td><td>${esc(c.archivo||"")}</td><td class="num">${c.corte?fmtD(c.corte):"—"}</td>
+        <td class="num">${c.equipos??"—"}</td><td class="num">${c.nuevas??"—"}</td></tr>`).join(""):`<tr><td colspan="6">${emptyState("Todavía no hay actualizaciones.")}</td></tr>`}</tbody></table></div></div>`;
+  $$("#homeBox [data-m]").forEach(r=>r.onclick=()=>openMod(r.dataset.m));
+  $$("#homeBox [data-mc]").forEach(r=>r.onclick=()=>{openMod(r.dataset.mc);setTab("cargas")});
+}
+function homeDocs(){
+  const fuente=m=>m.fuente||(m.parser==="pruebas"||m.parser==="bloques"?`Excel “${m.archivo}” (hoja Indice y una hoja por equipo con su historial de pruebas)`:
+    m.id==="vib"?"Exportación de equipos de MPC Orios: EquiposOrios.txt, equipos.xls o el Excel EquiposOriosRed (hoja “Ultima Toma”)":"Pendiente: reporte de Orios con las mismas columnas que vibraciones");
+  $("#homeBox").innerHTML=`<div class="sech"><h2>Documentación</h2></div>
+    <div class="card pcard"><h3>Cómo actualizar una técnica</h3>
+      <ol style="margin:0;padding-left:20px;display:grid;gap:6px">
+        <li>En el inicio abre la técnica y presiona <b>Actualizar</b>.</li>
+        <li><b>Cargar desde carpeta</b>: elige la carpeta sincronizada de OneDrive / SharePoint (Tablero predictivo). La página toma el archivo más reciente de esa técnica. También puedes arrastrar el archivo.</li>
+        <li>Revisa el resumen (equipos, muestras nuevas, duplicados) y presiona <b>Actualizar historial</b>.</li>
+      </ol>
+      <span class="sub">${S.nube?"Este sitio tiene historial compartido: lo que se guarda lo ven todos los que tienen la página abierta (en menos de un minuto). Para guardar se pide la clave de edición.":"Abierta como archivo, la página guarda el historial en el navegador de esta computadora."}</span></div>
+    <div class="dgrid">${MODS.map(m=>{const L=m.labels||LBL_DEF,T=m.stn||STN_DEF;return `<div class="card"><div style="display:flex;gap:10px;align-items:center">${MODLOGOS[m.id]?`<img src="${MODLOGOS[m.id]}" alt="" style="width:40px;height:40px;border-radius:50%">`:""}<div><b style="font-size:17px;color:var(--brand)">${esc(m.name)}</b><div class="sub">${esc(m.grp)} · ${esc(m.sub||m.desc)}</div></div></div>
+      <dl><dt>Fuente</dt><dd>${esc(fuente(m))}</dd>
+      <dt>Estatus</dt><dd>${["P1","P2","DL"].map(k=>`<span class="pill ${k}">${esc(L[k])}</span> ${esc((T[k].split("·")[1]||"").trim())}`).join("<br>")}</dd>
+      <dt>Vencida</dt><dd>Sin ${m.vence?"prueba":"monitoreo"} en más de ${(m.vence||90)>=365?Math.round((m.vence)/365)+((m.vence)>=730?" años":" año"):(m.vence||90)+" días"}</dd></dl></div>`}).join("")}</div>`;
+}
+$$("nav.mainnav [data-nav]").forEach(b=>b.onclick=()=>{S.hv=b.dataset.nav;if(S.mod!=="home")openMod("home");else{window.scrollTo({top:0});renderAll()}});
+$("#btnHome").onclick=()=>{S.hv="inicio";openMod("home")};
 
 /* tabs & filters */
 function setTab(t,mode){if(S.mod==="home")return;
