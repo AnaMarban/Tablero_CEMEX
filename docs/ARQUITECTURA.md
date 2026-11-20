@@ -10,7 +10,7 @@ Todo el tablero (estilos, estructura y JavaScript) vive en `src/template.html`. 
 | `__LOGO__` | `assets/logo_cemex.png` (base64) | ícono genérico |
 | `__SEED__` | historial inicial (JSON en línea) | `null` (usa la base de datos del Artifact) |
 | `__SEEDFILES__` | textos de los archivos originales | `{}` |
-| `__MODLOGOS__` | logos de cada técnica (`assets/logos/<id>.webp` como data URI) | `{}` (sin marca; se usa un ícono genérico) |
+| `__MODLOGOS__` | logos de cada técnica (`assets/logos/<id>.jpg`, `.jpeg`, `.png` o `.webp` como data URI) | `{}` (sin marca; se usa un ícono genérico) |
 | `__REPAIR__` | diccionario de acentos | igual |
 | `__FILEBRAND__` | prefijo del Excel exportado | igual |
 

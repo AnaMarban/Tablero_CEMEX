@@ -26,10 +26,11 @@ SEED_FILES = {
     "c_seed_2024": dict(name="2024_Monitor_Status_equipos_vibraciones.csv", text=(ORIG / "2024_Monitor_Status_equipos_vibraciones.csv").read_text(encoding="utf-8-sig")),
     "c_seed_tiempo": dict(name="EquiposOriosRed_hoja_Tiempo.csv", text=(ORIG / "EquiposOriosRed_hoja_Tiempo.csv").read_text(encoding="utf-8-sig")),
 }
-# logos de cada técnica (assets/logos/<id>.webp) -> data URI; solo en la versión archivo, el Artifact no lleva marca
-MODLOGOS = {f.stem: "data:image/webp;base64," + base64.b64encode(f.read_bytes()).decode() for f in sorted((ROOT / "assets/logos").glob("*.webp"))}
-# fotos de las tarjetas del inicio (assets/fotos/<id>.jpg|png|webp, <id> = vib, tri, pnd, mot, int, tra, bat, rel, envase) -> data URI; solo versión archivo
 MIME = {".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png", ".webp": "webp"}
+# logos de cada técnica (assets/logos/<id>.jpg|jpeg|png|webp) -> data URI; solo en la versión archivo
+MODLOGOS = {f.stem: f"data:image/{MIME[f.suffix.lower()]};base64," + base64.b64encode(f.read_bytes()).decode()
+            for f in sorted((ROOT / "assets/logos").glob("*")) if f.suffix.lower() in MIME}
+# fotos de las tarjetas del inicio (assets/fotos/<id>.jpg|jpeg|png|webp, <id> = vib, tri, pnd, mot, int, tra, bat, rel, envase) -> data URI; solo versión archivo
 MODFOTOS = {f.stem: f"data:image/{MIME[f.suffix.lower()]};base64," + base64.b64encode(f.read_bytes()).decode()
             for f in sorted((ROOT / "assets/fotos").glob("*")) if f.suffix.lower() in MIME}
 LOGO = '<img src="data:image/png;base64,' + base64.b64encode((ROOT / "assets/logo_cemex.png").read_bytes()).decode() + '" alt="CEMEX">'

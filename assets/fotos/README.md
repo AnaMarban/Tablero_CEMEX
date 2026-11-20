@@ -14,7 +14,7 @@ Pon aquí una foto por técnica o área. El nombre del archivo indica a qué tar
 | `rel.jpg` | Relevadores |
 | `envase.jpg` | Consulta por área · Envase |
 
-- Formato `.jpg`, `.png` o `.webp`.
+- Formato `.jpg`, `.jpeg`, `.png` o `.webp`.
 - Horizontal, de unos 1200 × 450 px. La tarjeta recorta al centro.
 - Que pese menos de 250 KB, porque cada foto se incrusta dentro de la página.
 - Mientras una técnica no tenga foto, su tarjeta muestra el logo.

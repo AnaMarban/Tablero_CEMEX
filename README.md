@@ -70,7 +70,7 @@ cemex-orios/
 ├── data/
 │   ├── raw/                     archivos originales (Orios, Excel, Power BI). El .xlsm va sin macros; su código está en docs/
 │   └── processed/               lo que generan los scripts (semilla del historial y copias de originales)
-├── assets/                      logo CEMEX y logos de cada técnica (assets/logos/<id>.webp, 240 px)
+├── assets/                      logo CEMEX y logos de cada técnica (assets/logos/<id>.jpg|jpeg|png|webp, 240 px)
 ├── netlify/functions/datos.mjs  servicio del historial compartido en Netlify (/api/datos)
 ├── netlify.toml, package.json   configuración de Netlify
 ├── tests/
