@@ -222,6 +222,16 @@ td.num{text-align:right;font-family:var(--font-m);font-variant-numeric:tabular-n
 @media (max-width:640px){.finding{grid-template-columns:1fr}}
 .finding .k{font-weight:600}
 .rec{font-size:14px}
+.lt{display:inline-grid;gap:2px;justify-items:start}
+.lt .ltx{display:block;max-height:4.6em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent)}
+.lt.open .ltx{max-height:none;-webkit-mask-image:none;mask-image:none}
+.lt .ltb{font-size:13px;font-weight:600}
+.lab{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);font-size:13px}
+.labm{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+.lchip{border:1px solid var(--line-strong);border-radius:999px;padding:2px 9px;background:var(--panel);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lchip b{font-weight:700}
+.lchip.la{border-color:var(--p1);background:var(--p1-soft,#fde8e8);color:var(--p1)}
+.lchip.lp{border-color:var(--p2);background:var(--p2-soft,#fff3d6);color:var(--p2)}
 .rec b{font-weight:600;color:var(--accent)}
 .com{font-size:14px;color:var(--fg-2);font-style:italic}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
@@ -646,7 +656,7 @@ function renderDiag(){
       <div style="text-align:right">${e.desde?`<div class="days" style="color:var(--${st.toLowerCase()})">${e.dias} días en falla</div><div class="sub">desde ${e.exacto?"":"al menos "}${fmtD(e.desde)}</div>`:""}${trendTxt(e)}</div></div>
       ${items.length?items.map(c=>`<div class="finding"><div><div class="lbl">Componente</div><div class="k">${esc(c.c)}</div></div><div style="display:grid;gap:3px">
         ${c.s?`<div><span class="lbl">Diagnóstico</span><div>${esc(c.s)}</div></div>`:""}
-        ${c.r&&!/^ver comentarios/i.test(c.r)?`<div class="rec"><b>Recomendación:</b> ${esc(c.r)}</div>`:""}
+        ${recHtml(c.r)}${labHtml(c.lab)}
         ${c.k?`<div class="com">Analista: ${esc(c.k.replace(/^\[[^\]]*\]\s*-\s*/,""))}</div>`:""}</div></div>`).join(""):`<div class="sub">Sin hallazgos en sus componentes.</div>`}
       <div class="acts"><button type="button" data-id="${e.id}" data-a="ficha">Historial completo</button><button type="button" data-id="${e.id}" data-a="orig">Ver formato original</button></div></article>`}).join("")+(F.length>shown.length?emptyState(`Mostrando ${shown.length} de ${F.length}. Usa los filtros para acotar.`):"")
     :emptyState("Ningún equipo con este estatus y filtros.");
@@ -662,10 +672,12 @@ function renderLista(){
   const F=filtered().sort((a,b)=>b.rank-a.rank||String(a.seccion).localeCompare(b.seccion)||String(a.equipo).localeCompare(b.equipo));
   $("#lsTitle").innerHTML=`Lista de diagnóstico <span class="sub mono">(${F.length})</span>`;
   const diag=e=>{const c=(e.comp||[]).filter(c=>c.s);return c.length?`<div class="dl">${c.map(c=>nk(c.s).includes(nk(c.c))?`<div>${esc(c.s)}</div>`:`<div><b>${esc(c.c)}:</b> ${esc(c.s)}</div>`).join("")}</div>`:`<span class="sub">Sin síntomas</span>`};
-  const reco=e=>{const c=(e.comp||[]).filter(c=>c.r);return c.length?`<div class="dl">${c.map(c=>`<div>${(e.comp||[]).length>1?`<b>${esc(c.c)}:</b> `:""}${esc(c.r)}</div>`).join("")}</div>`:`<span class="sub">—</span>`};
+  const reco=e=>{const c=(e.comp||[]).filter(c=>c.r);if(!c.length)return `<span class="sub">—</span>`;
+    const many=(e.comp||[]).length>1,html=c.map(c=>`<div>${many?`<b>${esc(c.c)}:</b> `:""}${esc(c.r)}</div>`).join(""),len=c.reduce((n,c)=>n+c.r.length,0);
+    return len>260||c.length>1?`<div class="lt"><div class="ltx dl">${html}</div><button type="button" class="link ltb" aria-expanded="false">Ver más${c.length>1?` (${c.length} recomendaciones)`:""}</button></div>`:`<div class="dl">${html}</div>`;};
   $("#lsTbl tbody").innerHTML=F.length?F.map(e=>`<tr class="row" data-id="${e.id}" tabindex="0">
     <td><span class="pill ${e.estatus}">${lbl(e.estatus)}</span>${e.activo?"":`<div class="sub">Inactivo</div>`}</td>
-    <td><span class="eqn">${esc(e.equipo)}</span><div class="sub">${esc(e.area)}</div></td>
+    <td><span class="eqn">${esc(e.equipo)}</span><div class="sub">${esc(e.area)}${e.linea?" · "+esc(e.linea):""}</div></td>
     <td>${esc(e.seccion)}</td><td>${diag(e)}</td><td>${reco(e)}</td>
     <td class="num">${fmtD(e.fecha)}<div class="sub">${e.ntomas} muestra${e.ntomas===1?"":"s"}</div></td></tr>`).join(""):`<tr><td colspan="6">${emptyState("Ningún equipo coincide con estos filtros.")}</td></tr>`;
   $$("#lsTbl tr.row").forEach(r=>{r.onclick=()=>openDrawer(r.dataset.id);r.onkeydown=ev=>{if(ev.key==="Enter")openDrawer(r.dataset.id)}});
@@ -715,7 +727,7 @@ function openDrawer(id){
   ${H.map((h,i)=>{const comps=(h.comp||[]).slice().sort((a,b)=>(b.s?1:0)-(a.s?1:0));const nb=comps.filter(c=>c.s).length;
     return `<details class="toma" id="tm${i}" ${i===0?"open":""}><summary><span class="pill ${h.e}">${lbl(h.e)}</span><b class="mono">${fmtD(h.f)}${h.h&&h.h!=="00:00"?" "+h.h:""}</b><span class="sub">${nb?nb+" componente"+(nb>1?"s":"")+" con síntoma":comps.length?"sin síntomas":"solo estatus registrado"}</span>${h.a===false?`<span class="pill NA">Inactivo</span>`:""}</summary>
     <div class="tb">${comps.length&&comps.some(c=>c.c)?comps.map(c=>`<div class="comp ${c.s?"bad":""}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(c.c||"—")}</b>${c.s?"":`<span class="sub">Sin síntoma</span>`}</div>
-      ${c.s?`<div><span class="lbl">Diagnóstico</span> ${esc(c.s)}</div>`:""}${c.r&&!/^ver comentarios/i.test(c.r)?`<div class="rec"><b>Recomendación:</b> ${esc(c.r)}</div>`:""}${c.k?`<div class="com">Analista: ${esc(c.k.replace(/^\[[^\]]*\]\s*-\s*/,""))}</div>`:""}</div>`).join(""):`<div class="sub">Esta muestra solo trae el estatus del equipo.</div>`}
+      ${c.s?`<div><span class="lbl">Diagnóstico</span> ${esc(c.s)}</div>`:""}${recHtml(c.r)}${labHtml(c.lab)}${c.k?`<div class="com">Analista: ${esc(c.k.replace(/^\[[^\]]*\]\s*-\s*/,""))}</div>`:""}</div>`).join(""):`<div class="sub">Esta muestra solo trae el estatus del equipo.</div>`}
       <div class="sub">Fuente: ${esc(srcName(h.src))} · <button type="button" class="link" data-ot="${esc(h.f)}">ver en formato original</button></div></div></details>`}).join("")}</div>`;
   $("#drawer").hidden=false;$("#dClose").onclick=closeDrawer;$("#dClose").focus();
   $$("#dp .tl").forEach(b=>b.onclick=()=>{const d=$("#tm"+b.dataset.i);d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"})});
@@ -1030,9 +1042,22 @@ function signumSheet(wb){for(const n of wb.SheetNames){const rows=XLSX.utils.she
 const SIG_ST={alert:"P1",caution:"P2",normal:"DL"},SIG_RV={alert:"alerta",caution:"precaución",normal:"normal"};
 const SIG_APP={geardrive:"Reductor",circulatingsystem:"Sistema de circulación",hydraulic:"Hidráulico",compressor:"Compresor"};
 const SIG_RT=[["contaminationrating","Contaminación"],["equipmentrating","Desgaste del equipo"],["oilrating","Condición del aceite"]];
+/* análisis de laboratorio que se guarda con cada muestra (lab): lubricante, viscosidad, agua, TAN y metales en ppm.
+   Cada valor va como [valor, marca] con marca "*" alerta, "+" precaución o "". */
+const LAB_MET=[["Fe","feiron"],["Cu","cucopper"],["Pb","pblead"],["Cr","crchromium"],["Al","alaluminum"],["Sn","sntin"],["Ni","ninickel"],["Ag","agsilver"],
+  ["Ti","tititanium"],["V","vvanadium"],["Mn","mnmanganese"],["Si","sisilicon"],["Na","nasodium"],["K","kpotassium"],
+  ["Ca","cacalcium"],["Mg","mgmagnesium"],["Zn","znzinc"],["P","pphosphorus"],["Mo","momolybdenum"],["B","bboron"],["Ba","babarium"]];
+const LAB_PROP=[["v40","viscosity40c"],["v100","viscosity100c"],["h2o","waterhotplate"],["tan","tanmgkohgm"]];
+/* Windows-1252: caracteres de 0x80–0x9F, para reparar acentos dañados */
+const CP1252=Object.fromEntries([..."€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"].map((c,i)=>[c,[0x80,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8E,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9E,0x9F][i]]));
 const SIG_BOILER=/\s*(Contacte a su representante de ExxonMobil[^.]*\.|Para mayor información contacte a su representante[^.]*\.)/gi;
 function parseSignum(rows){
-  const txt=v=>String(v??"").replace(/\s+/g," ").trim(),cap=t=>t?t[0].toUpperCase()+t.slice(1):t;
+  /* el Excel de Mobil Serv puede traer acentos dañados ("acciÃ³n"): se reparan */
+  const moji=t=>{if(!/[ÃÂ]/.test(t))return t;const b=[];
+    for(const ch of t){const c=ch.codePointAt(0);if(c<256)b.push(c);else if(CP1252[ch])b.push(CP1252[ch]);else return t}
+    try{return new TextDecoder("utf-8",{fatal:true}).decode(new Uint8Array(b))}catch(e){return t}};
+  const txt0=v=>moji(String(v??"")).replace(/\s+/g," ").trim(),cap=t=>t?t[0].toUpperCase()+t.slice(1):t;
+  const txt=v=>{const t=txt0(v);return /^-?\d+\.\d+$/.test(t)?String(Number(t)):t};   /* "0.40" (txt) y 0.4 (Excel) quedan igual */
   const p2=n=>String(n).padStart(2,"0");
   const fecha=v=>{if(v instanceof Date)return `${v.getFullYear()}-${p2(v.getMonth()+1)}-${p2(v.getDate())}`;
     const m=String(v??"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?`${m[3]}-${p2(m[1])}-${p2(m[2])}`:""};
@@ -1041,13 +1066,16 @@ function parseSignum(rows){
     cSt=ci("samplepointstatus"),cSid=ci("sampleid"),cDate=ci("datesampled"),cOv=ci("overallstatus"),cCom=ci("comments"),cAge=ci("oilage"),cAgeU=ci("oilageuom");
   const skip=new Set(["overallstatus","sampleresult",...SIG_RT.map(x=>x[0])]);
   const flagCols=K.map((k,j)=>k==="status"&&j+1<K.length&&!skip.has(K[j+1])?j:-1).filter(j=>j>=0);
+  const KD=H.map(h=>h.normalize("NFD").replace(/[^A-Za-z0-9]/g,"").toLowerCase());   /* conserva dígitos: "Viscosity @ 40C" ≠ "@ 100C" */
+  const all=k=>KD.map((x,j)=>x===k?j:-1).filter(j=>j>=0);   /* hay columnas repetidas (p. ej. "Mg  (Magnesium)" y "Mg (Magnesium)"): se usa la que traiga valor */
+  const labCols=[...LAB_PROP,...LAB_MET].map(([n,k])=>[n,all(k)]),cLt=ci("lubricanttested");
   const hoy=fecha(new Date(Date.now()+864e5)),seen=new Set(),tomas=[];let dup=0,bad=0,otras=0,futuras=0,filas=0;
   for(const r of rows.slice(hi+1)){
     if(!r||r.length<5||!r.some(x=>txt(x)))continue;filas++;
     const sig=txt(r[cSig]),f=fecha(r[cDate]),e=SIG_ST[nk(r[cOv])];
     if(!sig||!f||!e){bad++;continue}
     if(f>hoy){futuras++;continue}
-    if(!/guadalajara/i.test(txt(r[cName]))){otras++;continue}
+    if(/planta/i.test(txt(r[cName]))&&!/guadalajara/i.test(txt(r[cName]))){otras++;continue}   /* el Excel trae solo el área en Name */
     const sid=txt(r[cSid])||sig+"|"+f;if(seen.has(sid)){dup++;continue}seen.add(sid);
     const area=cap((txt(r[cName]).split("/").pop()||"").trim().toLowerCase())||"Sin área";
     const desc=txt(r[cDesc])||sig,unit=txt(r[cUnit]),app=txt(r[cApp]);
@@ -1056,6 +1084,11 @@ function parseSignum(rows){
       txt(r[cAge])?`Edad del aceite ${txt(r[cAge])} ${txt(r[cAgeU])}`.trim():"",
       SIG_RT.map(([k,n])=>ci(k)>=0&&txt(r[ci(k)])?`${n}: ${SIG_RV[nk(r[ci(k)])]||txt(r[ci(k)])}`:"").filter(Boolean).join(" · "),
       flags.length?"Fuera de límite: "+flags.join(", "):""].filter(Boolean).join(" · ");
+    const lab={},met={},lub=txt(r[cLt])||txt(r[cLub]);if(lub)lab.lub=lub;
+    for(const [n,cols] of labCols){const j=cols.find(j=>txt(r[j])!=="");if(j===undefined)continue;
+      let v=txt(r[j]);if(n==="h2o")v=/^not/i.test(v)?"No detectada":/^det/i.test(v)?"Detectada":v;
+      const f=r[j-1]==="*"||r[j-1]==="+"?r[j-1]:"";(LAB_PROP.some(x=>x[0]===n)?lab:met)[n]=[v,f]}
+    if(Object.keys(met).length)lab.m=met;
     let comp=[];
     if(e!=="DL"){
       for(const sec0 of String(r[cCom]??"").split("@")){const sec=txt(sec0);if(!sec)continue;
@@ -1065,9 +1098,9 @@ function parseSignum(rows){
         const tl=tipo.toLowerCase().replace(/^accion/,"acción").replace(/^precaucion/,"precaución");
         comp.push({c:cap(tema),s:tipo?`${cap(tl)}: ${tema}`:cap(tema),r:body,k:""})}
       if(!comp.length)comp.push({c:"Análisis de aceite",s:flags.length?"Fuera de límite: "+flags.join(", "):(e==="P1"?"Alerta":"Precaución"),r:"",k:""});
-      comp[0].k=resumen;
-    }else comp=[{c:"Análisis de aceite",s:"",r:"",k:resumen}];
-    tomas.push({id:djb("signum|"+sig),equipo:unit&&!desc.includes(unit)?`${desc} · ${unit}`:desc,seccion:area,area,linea:SIG_APP[nk(app)]||app,
+      comp[0].k=resumen;comp[0].lab=lab;
+    }else comp=[{c:"Análisis de aceite",s:"",r:"",k:resumen,lab}];
+    tomas.push({id:djb("signum|"+sig),equipo:unit&&!desc.includes(unit)?`${desc} · ${unit}`:desc,seccion:area,area,linea:[SIG_APP[nk(app)]||app,lub].filter(Boolean).join(" · "),
       planta:"Guadalajara",activo:!/^inact/i.test(txt(r[cSt])),estatus:e,fecha:f,hora:"00:00",comp});
   }
   return {tomas,dup,bad,otras,filas,futuras};
@@ -1221,6 +1254,22 @@ async function loadFromFolder(change){
 }
 $("#btnUpload").onclick=openModal;
 $("#mClose").onclick=()=>{if(!busy)$("#modal").hidden=true};
+/* recomendaciones largas: se ven unas líneas y "Ver más" despliega el texto completo */
+const longTxt=t=>t.length>260?`<span class="lt"><span class="ltx">${esc(t)}</span><button type="button" class="link ltb" aria-expanded="false">Ver más</button></span>`:esc(t);
+const LT_MAS=new WeakMap();
+const recHtml=r=>r&&!/^ver comentarios/i.test(r)?`<div class="rec"><b>Recomendación:</b> ${longTxt(r)}</div>`:"";
+document.addEventListener("click",ev=>{const b=ev.target.closest&&ev.target.closest(".ltb");if(!b)return;ev.stopPropagation();ev.preventDefault();
+  if(!LT_MAS.has(b))LT_MAS.set(b,b.textContent);const o=b.closest(".lt").classList.toggle("open");b.textContent=o?"Ver menos":LT_MAS.get(b);b.setAttribute("aria-expanded",o)},true);
+/* análisis de laboratorio (tribología): lubricante, viscosidad, agua y metales; rojo = alerta, ámbar = precaución */
+const LAB_G=[["Metales de desgaste",["Fe","Cu","Pb","Cr","Al","Sn","Ni","Ag","Ti","V","Mn"]],["Contaminantes",["Si","Na","K"]],["Aditivos",["Ca","Mg","Zn","P","Mo","B","Ba"]]];
+const LAB_N={Fe:"Hierro",Cu:"Cobre",Pb:"Plomo",Cr:"Cromo",Al:"Aluminio",Sn:"Estaño",Ni:"Níquel",Ag:"Plata",Ti:"Titanio",V:"Vanadio",Mn:"Manganeso",
+  Si:"Silicio (polvo)",Na:"Sodio",K:"Potasio",Ca:"Calcio",Mg:"Magnesio",Zn:"Zinc",P:"Fósforo",Mo:"Molibdeno",B:"Boro",Ba:"Bario"};
+function labHtml(L){if(!L||!(L.lub||L.m||L.v40))return "";const fl=f=>f==="*"?" la":f==="+"?" lp":"";
+  const props=[["Viscosidad a 40 °C",L.v40,"cSt"],["Viscosidad a 100 °C",L.v100,"cSt"],["Agua",L.h2o,""],["TAN",L.tan,"mg KOH/g"]].filter(x=>x[1]);
+  return `<div class="lab">${L.lub?`<div><span class="lbl">Lubricante</span> <b>${esc(L.lub)}</b></div>`:""}
+    ${props.length?`<div class="labm">${props.map(([n,[v,f],u])=>`<span class="lchip${fl(f)}">${n} <b>${esc(v)}</b>${u?" "+u:""}</span>`).join("")}</div>`:""}
+    ${L.m?LAB_G.map(([g,ks])=>{const xs=ks.filter(k=>L.m[k]);return xs.length?`<div><span class="lbl">${g} · ppm</span><div class="labm">${xs.map(k=>{const [v,f]=L.m[k];
+      return `<span class="lchip${fl(f)}" title="${LAB_N[k]}${f==="*"?" · alerta":f==="+"?" · precaución":""}">${k} <b>${esc(v)}</b></span>`}).join("")}</div></div>`:""}).join(""):""}</div>`}
 const faltaTxt=M=>M.parser==="signum"?`Para ${M.name} carga ${M.fuente}.`:`Para ${M.name} carga el Excel “${M.archivo}” (con la hoja Indice).`;
 async function readFile(file,note){
   $("#mErr").textContent="";
@@ -1345,6 +1394,11 @@ async function exportXlsx(){
     "Recomendación":cut(R.map(c=>(one(e,R)?c.c+": ":"")+c.r).join(" | ")),
     "Comentario del analista":cut(K.map(c=>(K.length>1?c.c+": ":"")+c.k).join(" | ")),
     "Historial de estatus (más reciente primero)":cut([...(e.hist||[])].reverse().map(h=>fmtD(h.f)+" "+lbl(h.e)).join(" · "))}});
+  const labOf=e=>(e.comp||[]).find(c=>c.lab)?.lab;
+  if(F.some(labOf)){const mets=LAB_G.flatMap(g=>g[1]).filter(k=>F.some(e=>labOf(e)?.m?.[k]));
+    rows.forEach((row,i)=>{const L=labOf(F[i])||{},v=x=>x?x[0]+(x[1]==="*"?" (alerta)":x[1]==="+"?" (precaución)":""):"";
+      row["Lubricante"]=L.lub||"";row["Viscosidad 40 °C (cSt)"]=v(L.v40);row["Agua"]=v(L.h2o);
+      mets.forEach(k=>row[`${k} (ppm)`]=v(L.m?.[k]))})}
   xlsxSave(`${"Mantenimiento_predictivo_GDL"}_${modInfo(S.mod).name.replace(/\s+/g,"_")}_${today()}.xlsx`,[[rows,modInfo(S.mod).name]]);
 }
 $("#btnExport").onclick=exportXlsx;

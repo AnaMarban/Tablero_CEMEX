@@ -115,6 +115,10 @@ async def main():
         print("importar en tribología:", await pg.text_content("#mSave"))
         assert "(0 equipos)" in await pg.text_content("#mSave")
         await pg.click("#mClose"); await pg.click("#btnUpload")
+        await pg.set_input_files("#file", str(ROOT / "data/raw/Tribologia.xlsx")); await pg.wait_for_selector("#mSave", timeout=30000)
+        print("importar Excel en tribología:", await pg.text_content("#mSave"))
+        assert "(0 equipos)" in await pg.text_content("#mSave")   # el Excel y el .txt dan lo mismo
+        await pg.click("#mClose"); await pg.click("#btnUpload")
         await pg.set_input_files("#file", XLS); await pg.wait_for_timeout(800)
         assert "Mobil Serv" in await pg.text_content("#mErr")
         await pg.click("#mClose")

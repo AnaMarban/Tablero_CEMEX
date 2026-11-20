@@ -408,11 +408,25 @@ SIG_ST = {"alert": "P1", "caution": "P2", "normal": "DL"}
 SIG_RV = {"alert": "alerta", "caution": "precaución", "normal": "normal"}
 SIG_APP = {"geardrive": "Reductor", "circulatingsystem": "Sistema de circulación", "hydraulic": "Hidráulico", "compressor": "Compresor"}
 SIG_RT = [("contaminationrating", "Contaminación"), ("equipmentrating", "Desgaste del equipo"), ("oilrating", "Condición del aceite")]
+LAB_MET = [("Fe", "feiron"), ("Cu", "cucopper"), ("Pb", "pblead"), ("Cr", "crchromium"), ("Al", "alaluminum"), ("Sn", "sntin"), ("Ni", "ninickel"),
+           ("Ag", "agsilver"), ("Ti", "tititanium"), ("V", "vvanadium"), ("Mn", "mnmanganese"), ("Si", "sisilicon"), ("Na", "nasodium"),
+           ("K", "kpotassium"), ("Ca", "cacalcium"), ("Mg", "mgmagnesium"), ("Zn", "znzinc"), ("P", "pphosphorus"), ("Mo", "momolybdenum"),
+           ("B", "bboron"), ("Ba", "babarium")]
+LAB_PROP = [("v40", "viscosity40c"), ("v100", "viscosity100c"), ("h2o", "waterhotplate"), ("tan", "tanmgkohgm")]
 SIG_BOILER = re.compile(r"\s*(Contacte a su representante de ExxonMobil[^.]*\.|Para mayor información contacte a su representante[^.]*\.)", re.I)
 
 
 def ws_(v):
-    return re.sub(r"\s+", " ", "" if v is None else str(v)).strip()
+    t = "" if v is None else str(v)
+    if re.search("[ÃÂ]", t):   # acentos dañados ("acciÃ³n", "CONDICIÃ“N"), como moji() en la página
+        try:
+            raw = bytes(ord(ch) if ord(ch) < 256 else ch.encode("cp1252")[0] for ch in t)
+            t = raw.decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError): pass
+    t = re.sub(r"\s+", " ", t).strip()
+    if re.fullmatch(r"-?\d+\.\d+", t):   # "0.40" (txt) y 0.4 (Excel) quedan igual, como String(Number(t)) en la página
+        f = float(t); t = str(int(f)) if f.is_integer() else repr(f)
+    return t
 
 
 def cap(t):
@@ -430,6 +444,10 @@ def parse_signum(text):
     skip = {"overallstatus", "sampleresult", *[k for k, _ in SIG_RT]}
     flag_cols = [j for j, k in enumerate(K) if k == "status" and j + 1 < len(K) and K[j + 1] not in skip]
     g = lambda r, j: r[j] if 0 <= j < len(r) else ""
+    KD = [re.sub(r"[^A-Za-z0-9]", "", unicodedata.normalize("NFD", h)).lower() for h in H]   # conserva dígitos, como KD en la página
+    lab_cols = [(n, [j for j, x in enumerate(KD) if x == k]) for n, k in LAB_PROP + LAB_MET]
+    cLt = ci("lubricanttested")
+    props = {n for n, _ in LAB_PROP}
     hoy = iso(datetime.datetime.now() + datetime.timedelta(days=1))
     seen, tomas, filas = set(), [], 0
     for r in rows[hi + 1:]:
@@ -438,7 +456,8 @@ def parse_signum(text):
         sig = ws_(g(r, cSig)); m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})", str(g(r, cDate)))
         f = f"{m[3]}-{int(m[1]):02d}-{int(m[2]):02d}" if m else ""
         e = SIG_ST.get(nk(g(r, cOv)))
-        if not sig or not f or not e or f > hoy or not re.search("guadalajara", ws_(g(r, cName)), re.I): continue
+        nm = ws_(g(r, cName))
+        if not sig or not f or not e or f > hoy or (re.search("planta", nm, re.I) and not re.search("guadalajara", nm, re.I)): continue
         sid = ws_(g(r, cSid)) or sig + "|" + f
         if sid in seen: continue
         seen.add(sid)
@@ -450,6 +469,17 @@ def parse_signum(text):
                                          ("Lubricante " + ws_(g(r, cLub))) if ws_(g(r, cLub)) else "",
                                          f"Edad del aceite {ws_(g(r, cAge))} {ws_(g(r, cAgeU))}".strip() if ws_(g(r, cAge)) else "",
                                          rat, ("Fuera de límite: " + ", ".join(flags)) if flags else ""] if p)
+        lab, met = {}, {}
+        lub = ws_(g(r, cLt)) or ws_(g(r, cLub))
+        if lub: lab["lub"] = lub
+        for n, cols in lab_cols:
+            j = next((j for j in cols if ws_(g(r, j)) != ""), None)
+            if j is None: continue
+            v = ws_(g(r, j))
+            if n == "h2o": v = "No detectada" if re.match(r"^not", v, re.I) else "Detectada" if re.match(r"^det", v, re.I) else v
+            fl = g(r, j - 1) if g(r, j - 1) in ("*", "+") else ""
+            (lab if n in props else met)[n] = [v, fl]
+        if met: lab["m"] = met
         comp = []
         if e != "DL":
             for sec0 in str(g(r, cCom)).split("@"):
@@ -466,10 +496,11 @@ def parse_signum(text):
             if not comp:
                 comp.append(dict(c="Análisis de aceite", s=("Fuera de límite: " + ", ".join(flags)) if flags else ("Alerta" if e == "P1" else "Precaución"), r="", k=""))
             comp[0]["k"] = resumen
+            comp[0]["lab"] = lab
         else:
-            comp = [dict(c="Análisis de aceite", s="", r="", k=resumen)]
+            comp = [dict(c="Análisis de aceite", s="", r="", k=resumen, lab=lab)]
         tomas.append(dict(id=djb("signum|" + sig), equipo=f"{desc} · {unit}" if unit and unit not in desc else desc, seccion=area, area=area,
-                          linea=SIG_APP.get(nk(app), app), planta="Guadalajara", activo=not re.match(r"^inact", ws_(g(r, cSt)), re.I),
+                          linea=" · ".join(x for x in [SIG_APP.get(nk(app), app), lub] if x), planta="Guadalajara", activo=not re.match(r"^inact", ws_(g(r, cSt)), re.I),
                           estatus=e, fecha=f, hora="00:00", comp=comp))
     return tomas, filas
 

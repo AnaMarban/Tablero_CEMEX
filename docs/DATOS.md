@@ -65,9 +65,14 @@ El tablero de **Motores** lee el Excel de pruebas (el mismo que la persona abre 
 - **Muestra** = cada renglón (`Date Sampled`, formato mes/día/año). Se quitan duplicados por `Sample ID`.
 - **Estatus** = `Overall Status`: Alert = P1 (Alerta), Caution = P2 (Precaución), Normal = DL.
 - **Diagnóstico y recomendación** = `Comments` del laboratorio. Trae una sección por hallazgo, separadas por "@". El título de cada sección es el diagnóstico (p. ej. "Acción requerida: niveles elevados de silicio") y el resto del texto es la recomendación. Se omite la frase final de contacto con ExxonMobil.
+- **Análisis de laboratorio** (`lab` en cada muestra): lubricante probado, viscosidad a 40 °C y a 100 °C, agua (detectada / no detectada), TAN y metales en ppm. Los metales se agrupan en desgaste (Fe, Cu, Pb, Cr, Al, Sn, Ni, Ag), contaminantes (Si, Na, K) y aditivos (Ca, Mg, Zn, P, Mo, B, Ba). Cada valor lleva la marca del laboratorio (rojo = alerta, ámbar = precaución). Se muestra en el detalle de cada muestra y va en el Excel exportado.
+- **Línea** = aplicación · lubricante (p. ej. "Reductor · MOBILGEAR 600 XP 320").
 - **Comentario** = número de muestra, lubricante, edad del aceite, las tres calificaciones (contaminación, desgaste del equipo, condición del aceite) y los parámetros marcados. En cada parámetro, la columna `Status` anterior trae `*` = alerta o `+` = precaución; p. ej. "Si (Silicon) 480 (alerta)".
 - **Muestra vencida**: más de 120 días sin muestra. El muestreo es aproximadamente trimestral (83 días en promedio).
-- Para actualizar se carga el mismo tipo de archivo (`.txt` de Mobil Serv, o el mismo reporte en Excel). La carpeta sincronizada busca archivos con "tribolog", "signum" o "mobil" en el nombre.
+- Para actualizar se carga el mismo tipo de archivo: el `.txt` de Mobil Serv o el mismo reporte en Excel (`data/raw/Tribologia.xlsx`). Ambos dan exactamente lo mismo.
+  - En el Excel, `Name` trae solo el área ("TRANSPORTES"); solo se descartan renglones que digan otra planta.
+  - Los acentos dañados del Excel ("acciÃ³n", "CONDICIÃ“N") se reparan.
+  - Los decimales se escriben igual en ambos formatos ("0.40" → 0.4). La carpeta sincronizada busca archivos con "tribolog", "signum" o "mobil" en el nombre.
 
 ## Identificador de equipo
 

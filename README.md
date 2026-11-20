@@ -21,7 +21,9 @@ Cada cuadro muestra su resumen P1/P2/DL y abre su propio tablero. Todos los tabl
 - **Interruptores**: Excel "GDL - Pruebas Interruptores" (Fuera de parámetros / Monitorear / Buen estado; bloques Condición física, Operación, Pruebas eléctricas y Relevador).
 - **Transformadores**: Excel "GDL - Pruebas Transformadores" (Fuera de tolerancia / Monitorear / Buen estado; bloques Fisicoquímico del aceite, Cromatografía y Pruebas físicas/eléctricas).
 
-- **Tribología**: exportación de análisis de aceite de Mobil Serv, `.txt` (Alerta / Precaución / Normal; diagnóstico y recomendación del laboratorio).
+- **Tribología**: exportación de análisis de aceite de Mobil Serv, `.txt` o Excel. Estatus Alerta / Precaución / Normal; diagnóstico y recomendación del laboratorio; metales, viscosidad, agua y lubricante de cada muestra.
+
+Las recomendaciones largas se muestran recortadas, con **Ver más** para leerlas completas.
 
 Pruebas no destructivas, Bancos de baterías y Relevadores se llenan al cargar su reporte.
 
